@@ -103,6 +103,7 @@
         app:layout_constraintTop_toBottomOf="@id/place_layout"
         app:layout_constraintBottom_toTopOf="@id/add_button"
         android:layout_marginBottom="20dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/list_item_member"
         />
 

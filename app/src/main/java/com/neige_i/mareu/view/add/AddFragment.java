@@ -8,18 +8,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DummyGenerator;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
 
-public class AddFragment extends Fragment {
+public class AddFragment extends Fragment implements MemberAdapter.OnButtonClickedListener {
+
+    private MemberAdapter memberAdapter;
+    private final List<String> memberList = new ArrayList<>(Collections.singletonList(""));
 
     public static AddFragment newInstance() {
         return new AddFragment();
@@ -34,15 +42,16 @@ public class AddFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set calendar
-        Calendar calendar = Calendar.getInstance();
-
         // Config topic
-        requireView().findViewById(R.id.topic_input);
+        final TextInputEditText topicInput = requireView().findViewById(R.id.topic_input);
+
+        // Set calendar
+        final Calendar calendar = Calendar.getInstance();
 
         // Config time
-        requireView().findViewById(R.id.time_input).setOnClickListener(input -> {
-            TimePickerDialog timePickerDialog = new TimePickerDialog(
+        final TextInputEditText timeInput = requireView().findViewById(R.id.time_input);
+        timeInput.setOnClickListener(input -> {
+            final TimePickerDialog timePickerDialog = new TimePickerDialog(
                     requireContext(),
                     (view22, hourOfDay, minute) -> {
                         ((TextInputEditText) input).setText(hourOfDay + ":" + minute);
@@ -56,8 +65,9 @@ public class AddFragment extends Fragment {
         });
 
         // Config date
-        requireView().findViewById(R.id.date_input).setOnClickListener(input -> {
-            DatePickerDialog datePickerDialog = new DatePickerDialog(
+        final TextInputEditText dateInput = requireView().findViewById(R.id.date_input);
+        dateInput.setOnClickListener(input -> {
+            final DatePickerDialog datePickerDialog = new DatePickerDialog(
                     requireContext(),
                     (view1, year, month, dayOfMonth) -> {
                         ((TextInputEditText) input).setText(dayOfMonth + "/" + month + "/" + year);
@@ -71,14 +81,39 @@ public class AddFragment extends Fragment {
         });
 
         // Config place
-        ((AutoCompleteTextView) requireView().findViewById(R.id.place_input)).setAdapter(new ArrayAdapter<>(
+        final AutoCompleteTextView placeInput = requireView().findViewById(R.id.place_input);
+        placeInput.setAdapter(new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
                 DummyGenerator.generateMeetingPlaces()
         ));
 
+        // Config RecyclerView
+        memberAdapter = new MemberAdapter(this, memberList);
+        ((RecyclerView) requireView().findViewById(R.id.list_member)).setAdapter(memberAdapter);
+
         // Config button
         requireView().findViewById(R.id.add_button).setOnClickListener(button -> {
+            System.out.println("Topic=" + isEmpty(topicInput) + " time=" + isEmpty(timeInput) + " date=" + isEmpty(dateInput) + " place=" + isEmpty(placeInput));
+//            requireActivity().finish();
         });
+    }
+
+    private String isEmpty(EditText v) {
+        String text = v.getText().toString();
+        return text.isEmpty() ? "empty" : text;
+    }
+
+    @Override
+    public void onButtonClicked(int viewId, int position) {
+        switch (viewId) {
+            case R.id.add_member:
+                memberList.add("");
+                break;
+            case R.id.remove_member:
+                memberList.remove(position);
+                break;
+        }
+        memberAdapter.notifyDataSetChanged();
     }
 }

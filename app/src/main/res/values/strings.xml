@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Ma réu</string>
     <string name="new_meeting">New meeting</string>
+    <string name="no_meeting">No meeting to show</string>
     <string name="delete_button">Delete button</string>
     <string name="meeting_place">Meeting image</string>
     <string name="topic">Topic</string>

@@ -13,7 +13,17 @@
         android:id="@+id/list_meeting"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/list_item_meeting"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/no_meeting"
+        android:textColor="@android:color/black"
+        android:textSize="24sp"
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
