@@ -21,11 +21,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         setTitle(getTitleId());
 
         // Config fragment
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, getFragment())
-                    .commitNow();
-        }
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, getFragment())
+                .commitNow();
     }
 
     @Override
