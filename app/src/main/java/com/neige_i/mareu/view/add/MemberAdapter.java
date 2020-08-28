@@ -8,21 +8,22 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DummyGenerator;
+import com.neige_i.mareu.view.model.MemberUi;
 
-import java.util.List;
+public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberViewHolder> {
 
-public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberViewHolder> {
+    private OnMemberChangedListener onMemberChangedListener;
 
-    private OnButtonClickedListener onButtonClickedListener;
-    private List<String> memberList;
-
-    public MemberAdapter(OnButtonClickedListener onButtonClickedListener, List<String> memberList) {
-        this.onButtonClickedListener = onButtonClickedListener;
-        this.memberList = memberList;
+    protected MemberAdapter(OnMemberChangedListener onMemberChangedListener) {
+        super(new MemberDiffCallback());
+        this.onMemberChangedListener = onMemberChangedListener;
     }
 
     @NonNull
@@ -32,47 +33,69 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
                 R.layout.list_item_member,
                 parent,
                 false
-        ), onButtonClickedListener);
+        ), onMemberChangedListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
-        holder.bind(getItemCount());
-    }
-
-    @Override
-    public int getItemCount() {
-        return memberList.size();
+        holder.bind(getItem(position));
     }
 
     static class MemberViewHolder extends RecyclerView.ViewHolder {
 
+        OnMemberChangedListener onMemberChangedListener;
+        AutoCompleteTextView email;
+        TextInputLayout emailLayout;
         ImageView removeButton;
 
-        public MemberViewHolder(View itemView, OnButtonClickedListener onButtonClickedListener) {
+        public MemberViewHolder(View itemView, OnMemberChangedListener onMemberChangedListener) {
             super(itemView);
+            this.onMemberChangedListener = onMemberChangedListener;
 
-            // Config place
-            ((AutoCompleteTextView) itemView.findViewById(R.id.member_input)).setAdapter(new ArrayAdapter<>(
+            // Config email
+            email = itemView.findViewById(R.id.email_input);
+            email.setAdapter(new ArrayAdapter<>(
                     itemView.getContext(),
                     android.R.layout.simple_list_item_1,
                     DummyGenerator.generateEmailAddresses()
             ));
+            email.setOnItemClickListener((parent, view, position, id) ->
+                    onMemberChangedListener.onEmailChosen(getAdapterPosition(), parent.getItemAtPosition(position).toString()));
+
+            // Config error
+            emailLayout = itemView.findViewById(R.id.email_layout);
 
             // Config buttons
             itemView.findViewById(R.id.add_member).setOnClickListener(v ->
-                    onButtonClickedListener.onButtonClicked(v.getId(), getAdapterPosition()));
+                    onMemberChangedListener.onAddMember(getAdapterPosition()));
             removeButton = itemView.findViewById(R.id.remove_member);
             removeButton.setOnClickListener(v ->
-                    onButtonClickedListener.onButtonClicked(v.getId(), getAdapterPosition()));
+                    onMemberChangedListener.onRemoveMember(getAdapterPosition()));
         }
 
-        void bind(int itemCount) {
-            removeButton.setVisibility(itemCount == 1 ? View.GONE : View.VISIBLE);
+        void bind(MemberUi memberUi) {
+            email.setText(memberUi.getEmail());
+            emailLayout.setError(memberUi.getErrorMessage());
+            removeButton.setVisibility(memberUi.getRemoveButtonVisibility());
         }
     }
 
-    interface OnButtonClickedListener {
-        void onButtonClicked(int viewId, int position);
+    private static class MemberDiffCallback extends DiffUtil.ItemCallback<MemberUi> {
+
+        @Override
+        public boolean areItemsTheSame(@NonNull MemberUi oldItem, @NonNull MemberUi newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull MemberUi oldItem, @NonNull MemberUi newItem) {
+            return oldItem.equals(newItem);
+        }
+    }
+
+    interface OnMemberChangedListener {
+        void onAddMember(int position);
+        void onRemoveMember(int position);
+        void onEmailChosen(int position, String email);
     }
 }

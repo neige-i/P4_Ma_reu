@@ -13,14 +13,14 @@ public class Meeting {
     private final String topic;
     private final String place;
     private final Calendar date;
-    private final List<String> memberList;
+    private final List<String> emailList;
 
-    public Meeting(String topic, String place, Calendar date, List<String> memberList) {
+    public Meeting(String topic, String place, Calendar date, List<String> emailList) {
         this.id = meetingId++;
         this.topic = topic;
         this.place = place;
         this.date = date;
-        this.memberList = memberList;
+        this.emailList = emailList;
     }
 
     public int getId() {
@@ -39,8 +39,8 @@ public class Meeting {
         return date;
     }
 
-    public List<String> getMemberList() {
-        return memberList;
+    public List<String> getEmailList() {
+        return emailList;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class Meeting {
                 ", topic='" + topic + '\'' +
                 ", place='" + place + '\'' +
                 ", date=" + date +
-                ", memberList=" + memberList +
+                ", memberList=" + emailList +
                 '}';
     }
 }

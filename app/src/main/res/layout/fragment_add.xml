@@ -97,6 +97,7 @@
                 app:endIconMode="dropdown_menu"
                 android:hint="@string/place"
                 app:errorEnabled="true"
+                android:labelFor="@id/place_input"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 >
 

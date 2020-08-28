@@ -47,6 +47,7 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
             super(itemView);
 
             image = itemView.findViewById(R.id.image);
+            // TODO: set image according to the meeting's place with Glide
             mainInfo = itemView.findViewById(R.id.main_info);
             members = itemView.findViewById(R.id.members);
         }
@@ -55,7 +56,7 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
             mainInfo.setText(meeting.getTopic() + " - "
                     + meeting.getDate().get(Calendar.HOUR_OF_DAY) + "h" + meeting.getDate().get(Calendar.MINUTE)
                     + " - " + meeting.getPlace());
-            members.setText(meeting.getMemberList().toString());
+            members.setText(meeting.getEmailList().toString());
         }
     }
 

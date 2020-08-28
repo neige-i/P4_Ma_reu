@@ -17,4 +17,5 @@
     <string name="add_button">Add button</string>
     <string name="remove_button">Remove button</string>
     <string name="mandatory_fields">All fields are mandatory</string>
+    <string name="meeting_already_exist">There is already a meeting at the same time, date and place</string>
 </resources>
