@@ -33,24 +33,29 @@ public class ListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Retrieve ViewModel
-        final ListViewModel listViewModel = new ViewModelProvider(
+        final ListViewModel viewModel = new ViewModelProvider(
                 requireActivity(),
                 ListViewModelFactory.getInstance()
         ).get(ListViewModel.class);
 
-        // Config RecyclerView & TextView
-        final MeetingAdapter meetingAdapter = new MeetingAdapter();
-        ((RecyclerView) view.findViewById(R.id.list_meeting)).setAdapter(meetingAdapter);
-        final TextView noMeeting = view.findViewById(R.id.no_meeting);
-        listViewModel.getMeetings().observe(getViewLifecycleOwner(), meetings -> {
-            noMeeting.setVisibility(meetings.isEmpty() ? View.VISIBLE : View.GONE);
-            meetingAdapter.submitList(new ArrayList<>(meetings));
-        });
+        configRecyclerViewAndTextView(viewModel);
+        configFab();
+        // TODO: config delete meeting button
+    }
 
-        // Config FAB
-        view.findViewById(R.id.add_meeting).setOnClickListener(fab -> {
-            startActivity(new Intent(requireActivity(), AddActivity.class));
+    private void configRecyclerViewAndTextView(ListViewModel viewModel) {
+        final MeetingAdapter meetingAdapter = new MeetingAdapter();
+        ((RecyclerView) requireView().findViewById(R.id.list_meeting)).setAdapter(meetingAdapter);
+        final TextView noMeeting = requireView().findViewById(R.id.no_meeting);
+        viewModel.getMeetings().observe(getViewLifecycleOwner(), meetings -> {
+            meetingAdapter.submitList(new ArrayList<>(meetings));
+            viewModel.setTextViewVisibility(meetings.isEmpty());
         });
+        viewModel.getTextViewVisibility().observe(getViewLifecycleOwner(), noMeeting::setVisibility);
+    }
+
+    private void configFab() {
+        requireView().findViewById(R.id.add_meeting).setOnClickListener(fab ->
+                startActivity(new Intent(requireActivity(), AddActivity.class)));
     }
 }

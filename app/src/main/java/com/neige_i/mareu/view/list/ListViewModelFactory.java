@@ -11,7 +11,7 @@ public class ListViewModelFactory implements ViewModelProvider.Factory {
     private static ListViewModelFactory factory;
 
     public static ListViewModelFactory getInstance() {
-        return factory == null ? new ListViewModelFactory() : factory;
+        return factory = factory == null ? new ListViewModelFactory() : factory;
     }
 
     private ListViewModelFactory() {

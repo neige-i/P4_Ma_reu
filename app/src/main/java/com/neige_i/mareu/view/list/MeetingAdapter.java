@@ -53,9 +53,13 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
         }
 
         void bind(Meeting meeting) {
-            mainInfo.setText(meeting.getTopic() + " - "
-                    + meeting.getDate().get(Calendar.HOUR_OF_DAY) + "h" + meeting.getDate().get(Calendar.MINUTE)
-                    + " - " + meeting.getPlace());
+            mainInfo.setText(itemView.getResources().getString(
+                    R.string.meeting_main_info,
+                    meeting.getTopic(),
+                    meeting.getDate().get(Calendar.HOUR_OF_DAY),
+                    meeting.getDate().get(Calendar.MINUTE),
+                    meeting.getPlace()
+            ));
             members.setText(meeting.getEmailList().toString());
         }
     }

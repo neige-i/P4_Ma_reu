@@ -11,7 +11,7 @@ public class AddViewModelFactory implements ViewModelProvider.Factory {
     private static AddViewModelFactory factory;
 
     public static AddViewModelFactory getInstance() {
-        return factory == null ? new AddViewModelFactory() : factory;
+        return factory = factory == null ? new AddViewModelFactory() : factory;
     }
 
     private AddViewModelFactory() {

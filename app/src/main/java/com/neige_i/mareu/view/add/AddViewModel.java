@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class AddViewModel extends ViewModel {
 
@@ -150,7 +151,7 @@ public class AddViewModel extends ViewModel {
 
     public void addMember(int position) {
         // TODO: auto scroll to newly added item
-        List<MemberUi> newList = new ArrayList<>(memberList.getValue());
+        List<MemberUi> newList = new ArrayList<>(Objects.requireNonNull(memberList.getValue()));
         // Prefer add(int, T) to add item directly after the current one and not at the end of the list
         newList.add(position, new MemberUi());
         // This condition is to set the button visibility only once and not each time a member is added
@@ -164,13 +165,13 @@ public class AddViewModel extends ViewModel {
     }
 
     public void updateMember(int position, String email) {
-        List<MemberUi> newList = new ArrayList<>(memberList.getValue());
+        List<MemberUi> newList = new ArrayList<>(Objects.requireNonNull(memberList.getValue()));
         newList.get(position).setEmail(email);
         memberList.setValue(newList);
     }
 
     public void removeMember(int position) {
-        List<MemberUi> newList = new ArrayList<>(memberList.getValue());
+        List<MemberUi> newList = new ArrayList<>(Objects.requireNonNull(memberList.getValue()));
         newList.remove(position);
         if (newList.size() == 1)
             newList.get(0).setRemoveButtonVisibility(View.INVISIBLE);
@@ -188,7 +189,7 @@ public class AddViewModel extends ViewModel {
             showSnack.setValue(R.string.meeting_already_exist);
         else {
             List<String> emailList = new ArrayList<>();
-            for (MemberUi member : memberList.getValue()) {
+            for (MemberUi member : Objects.requireNonNull(memberList.getValue())) {
                 emailList.add(member.getEmail());
             }
             meetingRepository.addMeeting(new Meeting(topic, place, calendar, emailList));
@@ -217,7 +218,7 @@ public class AddViewModel extends ViewModel {
             placeError.setValue(ERROR_MESSAGE);
             error = true;
         }
-        for (MemberUi memberUi : memberList.getValue()) {
+        for (MemberUi memberUi : Objects.requireNonNull(memberList.getValue())) {
             if (memberUi.getEmail().isEmpty()) {
                 memberUi.setErrorMessage(ERROR_MESSAGE);
                 error = true;
@@ -234,7 +235,7 @@ public class AddViewModel extends ViewModel {
     private boolean doesMeetingExist() {
         calendar.set(year, month, day, hour, minute);
         boolean alreadyExists = false;
-        for (Meeting meeting : meetingRepository.getAllMeetings().getValue()) {
+        for (Meeting meeting : Objects.requireNonNull(meetingRepository.getAllMeetings().getValue())) {
             Calendar calendar = meeting.getDate();
             if (calendar.get(Calendar.YEAR) == this.calendar.get(Calendar.YEAR)
                     && calendar.get(Calendar.MONTH) == this.calendar.get(Calendar.MONTH)

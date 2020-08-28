@@ -10,12 +10,9 @@
     <string name="place">Place</string>
     <string name="member">Member</string>
     <string name="add_meeting">Add the meeting</string>
-    <string name="time_title">Choose a time</string>
-    <string name="date_title">Choose a date</string>
-    <string name="ok_button">OK</string>
-    <string name="cancel_button">Cancel</string>
     <string name="add_button">Add button</string>
     <string name="remove_button">Remove button</string>
     <string name="mandatory_fields">All fields are mandatory</string>
     <string name="meeting_already_exist">There is already a meeting at the same time, date and place</string>
+    <string name="meeting_main_info">%s - %02dh%02d - %s</string>
 </resources>

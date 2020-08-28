@@ -19,7 +19,7 @@ import com.neige_i.mareu.view.model.MemberUi;
 
 public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberViewHolder> {
 
-    private OnMemberChangedListener onMemberChangedListener;
+    private final OnMemberChangedListener onMemberChangedListener;
 
     protected MemberAdapter(OnMemberChangedListener onMemberChangedListener) {
         super(new MemberDiffCallback());
@@ -43,14 +43,12 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
 
     static class MemberViewHolder extends RecyclerView.ViewHolder {
 
-        OnMemberChangedListener onMemberChangedListener;
-        AutoCompleteTextView email;
-        TextInputLayout emailLayout;
-        ImageView removeButton;
+        final AutoCompleteTextView email;
+        final TextInputLayout emailLayout;
+        final ImageView removeButton;
 
         public MemberViewHolder(View itemView, OnMemberChangedListener onMemberChangedListener) {
             super(itemView);
-            this.onMemberChangedListener = onMemberChangedListener;
 
             // Config email
             email = itemView.findViewById(R.id.email_input);

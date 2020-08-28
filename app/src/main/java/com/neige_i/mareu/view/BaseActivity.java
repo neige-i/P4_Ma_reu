@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment;
 
 import com.neige_i.mareu.R;
 
+import java.util.Objects;
+
 public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
@@ -17,7 +19,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // Config title
         setSupportActionBar(findViewById(R.id.toolbar));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(getTitleId() != R.string.app_name);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(getTitleId() != R.string.app_name);
         setTitle(getTitleId());
 
         // Config fragment
