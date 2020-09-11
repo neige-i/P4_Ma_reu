@@ -23,7 +23,7 @@ public class AddViewModel extends ViewModel {
     private final MeetingRepository meetingRepository;
 
     private final MutableLiveData<List<MemberUi>> memberList = new MutableLiveData<>(
-            new ArrayList<>(Collections.singletonList(new MemberUi(View.INVISIBLE))));
+        new ArrayList<>(Collections.singletonList(new MemberUi("", null, View.INVISIBLE))));
     private final MutableLiveData<String> topicError = new MutableLiveData<>();
     private final MutableLiveData<String> timeError = new MutableLiveData<>();
     private final MutableLiveData<String> dateError = new MutableLiveData<>();
@@ -151,12 +151,25 @@ public class AddViewModel extends ViewModel {
 
     public void addMember(int position) {
         // TODO: auto scroll to newly added item
-        List<MemberUi> newList = new ArrayList<>(Objects.requireNonNull(memberList.getValue()));
-        // Prefer add(int, T) to add item directly after the current one and not at the end of the list
-        newList.add(position, new MemberUi());
-        // This condition is to set the button visibility only once and not each time a member is added
-        if (newList.size() == 2)
-            newList.get(0).setRemoveButtonVisibility(View.VISIBLE);
+        List<MemberUi> oldValue = memberList.getValue();
+        List<MemberUi> newList = new ArrayList<>();
+
+        if (memberList.getValue() != null) {
+            List<MemberUi> value = memberList.getValue();
+            for (int i = 0; i < value.size(); i++) {
+                MemberUi memberUi = value.get(i);
+                final int visibility;
+                if (i == 0) {
+                    visibility = View.VISIBLE;
+                } else {
+                    visibility = memberUi.getRemoveButtonVisibility();
+                }
+
+                newList.add(new MemberUi(memberUi.getEmail(), memberUi.getErrorMessage(), visibility));
+            }
+
+            newList.add(position, new MemberUi("", null, View.VISIBLE));
+        }
 
         // TODO FIX: need to rotate device to see visibility update
         //  newList's first item is changed, but memberList is also updated
@@ -165,16 +178,52 @@ public class AddViewModel extends ViewModel {
     }
 
     public void updateMember(int position, String email) {
-        List<MemberUi> newList = new ArrayList<>(Objects.requireNonNull(memberList.getValue()));
-        newList.get(position).setEmail(email);
+        List<MemberUi> newList = new ArrayList<>();
+        if (memberList.getValue() != null) {
+            List<MemberUi> value = memberList.getValue();
+            for (int i = 0; i < value.size(); i++) {
+                MemberUi memberUi = value.get(i);
+                final String resolvedEmail;
+                if (i == position) {
+                    resolvedEmail = email;
+                } else {
+                    resolvedEmail = memberUi.getEmail();
+                }
+
+                newList.add(new MemberUi(resolvedEmail, memberUi.getErrorMessage(), memberUi.getRemoveButtonVisibility()));
+            }
+        }
         memberList.setValue(newList);
     }
 
     public void removeMember(int position) {
-        List<MemberUi> newList = new ArrayList<>(Objects.requireNonNull(memberList.getValue()));
-        newList.remove(position);
-        if (newList.size() == 1)
-            newList.get(0).setRemoveButtonVisibility(View.INVISIBLE);
+        List<MemberUi> oldValue = memberList.getValue();
+        List<MemberUi> newList = new ArrayList<>();
+
+        if (memberList.getValue() != null) {
+            List<MemberUi> value = memberList.getValue();
+            for (int i = 0; i < value.size(); i++) {
+                MemberUi memberUi = value.get(i);
+                final int visibility;
+                if (i == 0) {
+                    if (oldValue != null && oldValue.size() == 1) {
+                        visibility = View.INVISIBLE;
+                    } else {
+                        visibility = View.VISIBLE;
+                    }
+                } else {
+                    visibility = memberUi.getRemoveButtonVisibility();
+                }
+
+                if (position != i) {
+                    newList.add(new MemberUi(memberUi.getEmail(), memberUi.getErrorMessage(), visibility));
+                }
+            }
+        }
+
+        // TODO FIX: need to rotate device to see visibility update
+        //  newList's first item is changed, but memberList is also updated
+        //  so, when setValue() is called, there is no diff for the first item between old and new value
         memberList.setValue(newList);
     }
 
@@ -217,15 +266,15 @@ public class AddViewModel extends ViewModel {
         if (place.isEmpty()) {
             placeError.setValue(ERROR_MESSAGE);
             error = true;
-        }
-        for (MemberUi memberUi : Objects.requireNonNull(memberList.getValue())) {
+        }/* TODO IBRAHIM to fix (remap deep copy)
+        for (MemberUi memberUi : memberList.getValue()) {
             if (memberUi.getEmail().isEmpty()) {
                 memberUi.setErrorMessage(ERROR_MESSAGE);
                 error = true;
             }
             // TODO FIX: need to rotate device to see error update
             memberList.setValue(memberList.getValue());
-        }
+        }*/
         return error;
     }
 
@@ -238,11 +287,11 @@ public class AddViewModel extends ViewModel {
         for (Meeting meeting : Objects.requireNonNull(meetingRepository.getAllMeetings().getValue())) {
             Calendar calendar = meeting.getDate();
             if (calendar.get(Calendar.YEAR) == this.calendar.get(Calendar.YEAR)
-                    && calendar.get(Calendar.MONTH) == this.calendar.get(Calendar.MONTH)
-                    && calendar.get(Calendar.DAY_OF_MONTH) == this.calendar.get(Calendar.DAY_OF_MONTH)
-                    && calendar.get(Calendar.HOUR_OF_DAY) == this.calendar.get(Calendar.HOUR_OF_DAY)
-                    && calendar.get(Calendar.MINUTE) == this.calendar.get(Calendar.MINUTE)
-                    && meeting.getPlace().equals(place)
+                && calendar.get(Calendar.MONTH) == this.calendar.get(Calendar.MONTH)
+                && calendar.get(Calendar.DAY_OF_MONTH) == this.calendar.get(Calendar.DAY_OF_MONTH)
+                && calendar.get(Calendar.HOUR_OF_DAY) == this.calendar.get(Calendar.HOUR_OF_DAY)
+                && calendar.get(Calendar.MINUTE) == this.calendar.get(Calendar.MINUTE)
+                && meeting.getPlace().equals(place)
             ) {
                 timeError.setValue(ERROR_MESSAGE);
                 dateError.setValue(ERROR_MESSAGE);

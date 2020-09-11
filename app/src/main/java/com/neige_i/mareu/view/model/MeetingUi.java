@@ -16,6 +16,11 @@ public class MeetingUi {
     private final List<MemberUi> memberUiList = new ArrayList<>();
     private final String[] errors = new String[5];
 
+//    TODO IBRAHIM Use booleans to tell view there's errors
+//    public final boolean hasMeetingNameError;
+//    public final boolean hasRoomError;
+//    public final boolean hasNameError;
+
     public String[] getFields() {
         return fields;
     }
