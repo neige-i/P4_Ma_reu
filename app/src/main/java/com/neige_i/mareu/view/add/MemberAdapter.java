@@ -1,5 +1,6 @@
 package com.neige_i.mareu.view.add;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,8 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DummyGenerator;
 import com.neige_i.mareu.view.model.MemberUi;
+
+import static android.content.ContentValues.TAG;
 
 public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberViewHolder> {
 
@@ -72,6 +75,8 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
         }
 
         void bind(MemberUi memberUi) {
+            Log.d("Nino", "bind() called with: memberUi = [" + memberUi + "]");
+
             email.setText(memberUi.getEmail());
             emailLayout.setError(memberUi.getErrorMessage());
             removeButton.setVisibility(memberUi.getRemoveButtonVisibility());
@@ -80,9 +85,10 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
 
     private static class MemberDiffCallback extends DiffUtil.ItemCallback<MemberUi> {
 
+        // TODO IBRAHIM utiliser l'ID
         @Override
         public boolean areItemsTheSame(@NonNull MemberUi oldItem, @NonNull MemberUi newItem) {
-            return oldItem.equals(newItem);
+            return oldItem.getEmail().equalsIgnoreCase(newItem.getEmail());
         }
 
         @Override
