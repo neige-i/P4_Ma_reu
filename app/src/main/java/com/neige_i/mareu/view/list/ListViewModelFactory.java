@@ -5,13 +5,20 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.neige_i.mareu.data.DI;
+import com.neige_i.mareu.view.add.AddViewModelFactory;
 
 public class ListViewModelFactory implements ViewModelProvider.Factory {
 
     private static ListViewModelFactory factory;
 
     public static ListViewModelFactory getInstance() {
-        return factory = factory == null ? new ListViewModelFactory() : factory;
+        if (factory == null) {
+            synchronized (AddViewModelFactory.class) {
+                if (factory == null)
+                    factory = new ListViewModelFactory();
+            }
+        }
+        return factory;
     }
 
     private ListViewModelFactory() {
@@ -22,7 +29,7 @@ public class ListViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(ListViewModel.class)) {
-            return (T) new ListViewModel(DI.getRepository()/*new MeetingRepositoryImpl()*/);
+            return (T) new ListViewModel(DI.getRepository());
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

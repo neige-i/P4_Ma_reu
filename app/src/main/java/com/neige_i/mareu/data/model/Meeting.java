@@ -2,58 +2,83 @@ package com.neige_i.mareu.data.model;
 
 import androidx.annotation.NonNull;
 
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 public class Meeting {
 
-    private static int meetingId = 0;
-    private final int id;
-    private final String topic;
-    private final String place;
-    private final Calendar date;
-    private final List<String> emailList;
+    // ---------- CLASS VARIABLE
 
-    public Meeting(String topic, String place, Calendar date, List<String> emailList) {
-        this.id = meetingId++;
+    private static int meetingId = 0;
+
+    // ---------- INSTANCE VARIABLE
+
+    private final int id;
+    @NonNull private final String topic;
+    @NonNull private final String place;
+    @NonNull private final LocalDateTime startDateTime; // TODO: add endDateTime
+    @NonNull private final List<String> emailList;
+
+    // ---------- CONSTRUCTOR
+
+    public Meeting(int id, @NonNull String topic, @NonNull String place,
+                   @NonNull LocalDateTime startDateTime,
+                   @NonNull List<String> emailList
+    ) {
+        this.id = id;
         this.topic = topic;
         this.place = place;
-        this.date = date;
+        this.startDateTime = startDateTime;
         this.emailList = emailList;
     }
+
+    public Meeting(@NonNull String topic, @NonNull String place, @NonNull LocalDateTime startDateTime, @NonNull List<String> emailList) {
+        this(meetingId++, topic, place, startDateTime, emailList);
+//        this.id = meetingId++;
+//        this.topic = topic;
+//        this.place = place;
+//        this.startDateTime = startDateTime;
+//        this.emailList = emailList;
+    }
+
+    // ---------- GETTER
 
     public int getId() {
         return id;
     }
 
+    @NonNull
     public String getTopic() {
         return topic;
     }
 
+    @NonNull
     public String getPlace() {
         return place;
     }
 
-    public Calendar getDate() {
-        return date;
+    @NonNull
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
     }
 
+    @NonNull
     public List<String> getEmailList() {
         return emailList;
     }
+
+    // ---------- OVERRIDDEN OBJECT's METHODS
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Meeting meeting = (Meeting) o;
-        return id == meeting.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+        return id == meeting.id &&
+                topic.equals(meeting.topic) &&
+                place.equals(meeting.place) &&
+                startDateTime.equals(meeting.startDateTime) &&
+                emailList.equals(meeting.emailList);
     }
 
     @NonNull
@@ -63,7 +88,7 @@ public class Meeting {
                 "id=" + id +
                 ", topic='" + topic + '\'' +
                 ", place='" + place + '\'' +
-                ", date=" + date +
+                ", date=" + startDateTime +
                 ", memberList=" + emailList +
                 '}';
     }

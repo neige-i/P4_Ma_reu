@@ -15,17 +15,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
-import com.neige_i.mareu.data.DummyGenerator;
 import com.neige_i.mareu.view.model.MemberUi;
 
-import static android.content.ContentValues.TAG;
+import java.util.List;
 
 public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberViewHolder> {
 
+    private final List<String> dropDown;
     private final OnMemberChangedListener onMemberChangedListener;
 
-    protected MemberAdapter(OnMemberChangedListener onMemberChangedListener) {
+    protected MemberAdapter(List<String> dropDown, OnMemberChangedListener onMemberChangedListener) {
         super(new MemberDiffCallback());
+        this.dropDown = dropDown;
         this.onMemberChangedListener = onMemberChangedListener;
     }
 
@@ -36,12 +37,12 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
                 R.layout.list_item_member,
                 parent,
                 false
-        ), onMemberChangedListener);
+        ), onMemberChangedListener, dropDown);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        holder.bind(getItem(position), onMemberChangedListener);
     }
 
     static class MemberViewHolder extends RecyclerView.ViewHolder {
@@ -50,7 +51,7 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
         final TextInputLayout emailLayout;
         final ImageView removeButton;
 
-        public MemberViewHolder(View itemView, OnMemberChangedListener onMemberChangedListener) {
+        public MemberViewHolder(View itemView, OnMemberChangedListener onMemberChangedListener, List<String> dropDown) {
             super(itemView);
 
             // Config email
@@ -58,7 +59,7 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
             email.setAdapter(new ArrayAdapter<>(
                     itemView.getContext(),
                     android.R.layout.simple_list_item_1,
-                    DummyGenerator.generateEmailAddresses()
+                    dropDown
             ));
             email.setOnItemClickListener((parent, view, position, id) ->
                     onMemberChangedListener.onEmailChosen(getAdapterPosition(), parent.getItemAtPosition(position).toString()));
@@ -67,28 +68,26 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
             emailLayout = itemView.findViewById(R.id.email_layout);
 
             // Config buttons
+            removeButton = itemView.findViewById(R.id.remove_member);
             itemView.findViewById(R.id.add_member).setOnClickListener(v ->
                     onMemberChangedListener.onAddMember(getAdapterPosition()));
-            removeButton = itemView.findViewById(R.id.remove_member);
-            removeButton.setOnClickListener(v ->
-                    onMemberChangedListener.onRemoveMember(getAdapterPosition()));
         }
 
-        void bind(MemberUi memberUi) {
+        void bind(MemberUi memberUi, OnMemberChangedListener onMemberChangedListener) {
             Log.d("Nino", "bind() called with: memberUi = [" + memberUi + "]");
-
-            email.setText(memberUi.getEmail());
-            emailLayout.setError(memberUi.getErrorMessage());
+            email.setText(memberUi.getEmail(), false);
+            emailLayout.setError(memberUi.getEmailError());
             removeButton.setVisibility(memberUi.getRemoveButtonVisibility());
+            removeButton.setOnClickListener(v ->
+                                                onMemberChangedListener.onRemoveMember(memberUi));
         }
     }
 
     private static class MemberDiffCallback extends DiffUtil.ItemCallback<MemberUi> {
 
-        // TODO IBRAHIM utiliser l'ID
         @Override
         public boolean areItemsTheSame(@NonNull MemberUi oldItem, @NonNull MemberUi newItem) {
-            return oldItem.getEmail().equalsIgnoreCase(newItem.getEmail());
+            return oldItem.getId() == newItem.getId();
         }
 
         @Override
@@ -99,7 +98,7 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
 
     interface OnMemberChangedListener {
         void onAddMember(int position);
-        void onRemoveMember(int position);
+        void onRemoveMember(MemberUi memberUi);
         void onEmailChosen(int position, String email);
     }
 }

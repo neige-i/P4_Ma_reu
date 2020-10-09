@@ -7,7 +7,6 @@ import com.neige_i.mareu.data.model.Meeting;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class MeetingRepositoryImpl implements MeetingRepository {
 
@@ -20,19 +19,22 @@ public class MeetingRepositoryImpl implements MeetingRepository {
 
     @Override
     public void addMeeting(Meeting meetingToAdd) {
-        Objects.requireNonNull(meetingList.getValue()).add(meetingToAdd);
-        meetingList.setValue(meetingList.getValue());
+        if (meetingList.getValue() != null) {
+            meetingList.getValue().add(meetingToAdd);
+            meetingList.setValue(meetingList.getValue());
+        }
     }
 
     @Override
     public void deleteMeeting(int meetingId) {
-        List<Meeting> meetings = meetingList.getValue();
-        for (Meeting meeting : Objects.requireNonNull(meetings)) {
-            if (meeting.getId() == meetingId) {
-                meetings.remove(meeting);
-                break;
+        if (meetingList.getValue() != null) {
+            for (Meeting meeting : meetingList.getValue()) {
+                if (meeting.getId() == meetingId) {
+                    meetingList.getValue().remove(meeting);
+                    break;
+                }
             }
+            meetingList.setValue(meetingList.getValue());
         }
-        meetingList.setValue(meetings);
     }
 }

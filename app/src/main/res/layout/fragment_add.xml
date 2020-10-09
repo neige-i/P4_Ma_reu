@@ -8,6 +8,11 @@
     tools:context=".view.add.AddFragment"
     >
 
+    <!--
+        askme: focus on first input view
+         focus/click on TextInputEditText need 2 clicks
+         Layout CoordinatorLayout's child views
+     -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

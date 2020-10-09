@@ -22,6 +22,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DummyGenerator;
+import com.neige_i.mareu.view.model.MemberUi;
 
 public class AddFragment extends Fragment {
 
@@ -38,20 +39,48 @@ public class AddFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        AddViewModel viewModel = new ViewModelProvider(
+        final AddViewModel viewModel = new ViewModelProvider(
                 requireActivity(),
                 AddViewModelFactory.getInstance()
         ).get(AddViewModel.class);
 
-        configTopic(viewModel);
-        configTime(viewModel);
-        configDate(viewModel);
-        configPlace(viewModel);
-        configMemberList(viewModel);
+        // Init views
+        final TextInputEditText topicInput = configTopic(viewModel);
+        final TextInputEditText timeInput = configTime(viewModel);
+        final TextInputEditText dateInput = configDate(viewModel);
+        final AutoCompleteTextView placeInput = configPlace(viewModel);
+        final MemberAdapter memberAdapter = configMemberList(viewModel);
         configButton(viewModel);
-        configInputLayouts(viewModel);
-        configSnackbar(viewModel);
-        configEndActivity(viewModel);
+        final TextInputLayout topicLayout = requireView().findViewById(R.id.topic_layout);
+        final TextInputLayout timeLayout = requireView().findViewById(R.id.time_layout);
+        final TextInputLayout dateLayout = requireView().findViewById(R.id.date_layout);
+        final TextInputLayout placeLayout = requireView().findViewById(R.id.place_layout);
+
+        // Update UI when 'state' LiveData is changed
+        viewModel.getMeetingUiLiveData().observe(getViewLifecycleOwner(), meetingUi -> {
+            setTextIfDifferent(topicInput, meetingUi.getTopic());
+            timeInput.setText(meetingUi.getTimeStart());
+            dateInput.setText(meetingUi.getDate());
+            placeInput.setText(meetingUi.getPlace(), false);
+            memberAdapter.submitList(meetingUi.getMemberList());
+            topicLayout.setError(meetingUi.getTopicError());
+            timeLayout.setError(meetingUi.getTimeStartError());
+            dateLayout.setError(meetingUi.getDateError());
+            placeLayout.setError(meetingUi.getPlaceError());
+        });
+
+        // Update UI when 'event' LiveData is triggered
+        showDatePicker(viewModel);
+        showTimePicker(viewModel);
+        showSnackbar(viewModel);
+        endActivity(viewModel);
+    }
+
+    // Avoid infinite loop
+    private void setTextIfDifferent(TextInputEditText input, String newText) {
+        if (input.getText() != null && !input.getText().toString().equals(newText)) {
+            input.setText(newText);
+        }
     }
 
     // ------------
@@ -60,9 +89,8 @@ public class AddFragment extends Fragment {
     // Let ViewModel do computations on click events
     // ------------
 
-    private void configTopic(AddViewModel viewModel) {
+    private TextInputEditText configTopic(AddViewModel viewModel) {
         final TextInputEditText topic = requireView().findViewById(R.id.topic_input);
-        topic.setText(viewModel.getTopic());
         topic.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -74,115 +102,93 @@ public class AddFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                viewModel.setTopic(s.toString());
+                viewModel.onTopicChanged(s.toString());
             }
         });
+        return topic;
     }
 
-    private void configTime(AddViewModel viewModel) {
+    private TextInputEditText configTime(AddViewModel viewModel) {
         final TextInputEditText timeInput = requireView().findViewById(R.id.time_input);
-        timeInput.setText(viewModel.getTime());
-        timeInput.setOnClickListener(input -> new TimePickerDialog(
-                requireContext(),
-                (view1, hourOfDay, minute) -> {
-                    viewModel.setTime(hourOfDay, minute);
-                    timeInput.setText(viewModel.getTime());
-                },
-                viewModel.getHour(),
-                viewModel.getMinute(),
-                true
-        ).show());
-//        viewModel.getTime().observe(getViewLifecycleOwner(), timeInput::setText);
+        timeInput.setOnClickListener(input -> viewModel.onTimeClicked());
+        return timeInput;
     }
 
-    private void configDate(AddViewModel viewModel) {
+    private TextInputEditText configDate(AddViewModel viewModel) {
         final TextInputEditText dateInput = requireView().findViewById(R.id.date_input);
-        dateInput.setText(viewModel.getDate());
-        dateInput.setOnClickListener(input -> new DatePickerDialog(
-                requireContext(),
-                (view1, year, month, dayOfMonth) -> {
-                    viewModel.setDate(year, month, dayOfMonth);
-                    dateInput.setText(viewModel.getDate());
-                },
-                viewModel.getYear(),
-                viewModel.getMonth(),
-                viewModel.getDay()
-        ).show());
-//        viewModel.getDate().observe(getViewLifecycleOwner(), dateInput::setText);
+        dateInput.setOnClickListener(input -> viewModel.onDateClicked());
+        return dateInput;
     }
 
-    private void configPlace(AddViewModel viewModel) {
+    private AutoCompleteTextView configPlace(AddViewModel viewModel) {
         final AutoCompleteTextView placeInput = requireView().findViewById(R.id.place_input);
-        placeInput.setText(viewModel.getPlace());
         placeInput.setAdapter(new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
                 DummyGenerator.generateMeetingPlaces()
         ));
         placeInput.setOnItemClickListener((parent, view1, position, id) ->
-                viewModel.setPlace(parent.getItemAtPosition(position).toString()));
+                viewModel.onPlaceSelected(parent.getItemAtPosition(position).toString()));
+        return placeInput;
     }
 
-    private void configMemberList(final AddViewModel viewModel) {
-        final MemberAdapter memberAdapter = new MemberAdapter(new MemberAdapter.OnMemberChangedListener() {
+    private MemberAdapter configMemberList(final AddViewModel viewModel) {
+        // ASKME: get LiveData value without observing
+        final MemberAdapter memberAdapter = new MemberAdapter(viewModel.getMeetingUiLiveData().getValue().getAvailableMembers(), new MemberAdapter.OnMemberChangedListener() {
             @Override
-            // Add the member after the current one
             public void onAddMember(int position) {
-                viewModel.addMember(position + 1);
+                viewModel.onAddMember(position);
             }
 
             @Override
-            public void onRemoveMember(int position) {
-                viewModel.removeMember(position);
+            public void onRemoveMember(MemberUi memberUi) {
+                viewModel.onRemoveMember(memberUi);
             }
 
             @Override
             public void onEmailChosen(int position, String email) {
-                viewModel.updateMember(position, email);
+                viewModel.onUpdateMember(position, email);
             }
         });
-        ((RecyclerView) requireView().findViewById(R.id.list_member)).setAdapter(memberAdapter);
-        viewModel.getMemberList().observe(getViewLifecycleOwner(), memberAdapter::submitList);
+        final RecyclerView recyclerView = requireView().findViewById(R.id.list_member);
+        recyclerView.setAdapter(memberAdapter);
+//        viewModel.getMemberToShow().observe(getViewLifecycleOwner(), position -> {
+//            assert recyclerView.getLayoutManager() != null; // Defined in XML
+//            recyclerView.getLayoutManager().scrollToPosition(position); // TODO: auto scroll
+//        });
+        return memberAdapter;
     }
 
     private void configButton(AddViewModel viewModel) {
         requireView().findViewById(R.id.add_button).setOnClickListener(button -> viewModel.onAddMeeting());
     }
 
-    private void configInputLayouts(AddViewModel viewModel) {
-        final TextInputLayout topicLayout = requireView().findViewById(R.id.topic_layout);
-        final TextInputLayout timeLayout = requireView().findViewById(R.id.time_layout);
-        final TextInputLayout dateLayout = requireView().findViewById(R.id.date_layout);
-        final TextInputLayout placeLayout = requireView().findViewById(R.id.place_layout);
-        viewModel.getTopicError().observe(getViewLifecycleOwner(), topicLayout::setError);
-        viewModel.getTimeError().observe(getViewLifecycleOwner(), timeLayout::setError);
-        viewModel.getDateError().observe(getViewLifecycleOwner(), dateLayout::setError);
-        viewModel.getPlaceError().observe(getViewLifecycleOwner(), placeLayout::setError);
+    private void showDatePicker(AddViewModel viewModel) {
+        viewModel.getDatePicker().observe(getViewLifecycleOwner(), localDate -> new DatePickerDialog(
+            requireContext(),
+            (view1, year, month, dayOfMonth) -> viewModel.onDateValidated(year, month, dayOfMonth),
+            localDate.getYear(),
+            localDate.getMonthValue(),
+            localDate.getDayOfMonth()
+        ).show());
     }
 
-    private void configSnackbar(AddViewModel viewModel) {
-        viewModel.getShowSnack().observe(getViewLifecycleOwner(), errorMessageId -> {
-            // TODO: use SingleLiveEvent to remove if condition
-            if (errorMessageId != -1) {
-                Snackbar.make(requireView(), errorMessageId, Snackbar.LENGTH_LONG).show();
-                viewModel.cancelShowSnack();
-            }
-        });
+    private void showTimePicker(AddViewModel viewModel) {
+        viewModel.getTimePicker().observe(getViewLifecycleOwner(), localTime -> new TimePickerDialog(
+            requireContext(),
+            (view1, hourOfDay, minute) -> viewModel.onTimeValidated(hourOfDay, minute),
+            localTime.getHour(),
+            localTime.getMinute(),
+            true
+        ).show());
     }
 
-    private void configEndActivity(AddViewModel viewModel) {
-        viewModel.getEndActivity().observe(getViewLifecycleOwner(), aBoolean -> {
-            // TODO: use SingleLiveEvent to remove if condition
-            if (aBoolean) {
-                requireActivity().finish();
-                viewModel.cancelEndActivity();
-            }
-        });
+    private void showSnackbar(AddViewModel viewModel) {
+        viewModel.getShowSnack().observe(getViewLifecycleOwner(), errorMessageId ->
+                Snackbar.make(requireView(), errorMessageId, Snackbar.LENGTH_LONG).show());
     }
 
-    // ------------
-    // Let ViewModel do computations on ViewHolder's click events
-    // ------------
-
-
+    private void endActivity(AddViewModel viewModel) {
+        viewModel.getEndActivity().observe(getViewLifecycleOwner(), aVoid -> requireActivity().finish());
+    }
 }

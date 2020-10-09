@@ -14,8 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.model.Meeting;
 
-import java.util.Calendar;
-
 public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingViewHolder> {
 
     protected MeetingAdapter() {
@@ -47,7 +45,6 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
             super(itemView);
 
             image = itemView.findViewById(R.id.image);
-            // TODO: set image according to the meeting's place with Glide
             mainInfo = itemView.findViewById(R.id.main_info);
             members = itemView.findViewById(R.id.members);
         }
@@ -56,8 +53,8 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
             mainInfo.setText(itemView.getResources().getString(
                     R.string.meeting_main_info,
                     meeting.getTopic(),
-                    meeting.getDate().get(Calendar.HOUR_OF_DAY),
-                    meeting.getDate().get(Calendar.MINUTE),
+                    meeting.getStartDateTime().getHour(),
+                    meeting.getStartDateTime().getMinute(),
                     meeting.getPlace()
             ));
             members.setText(meeting.getEmailList().toString());

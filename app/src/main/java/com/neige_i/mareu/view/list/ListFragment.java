@@ -16,8 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.view.add.AddActivity;
 
-import java.util.ArrayList;
-
 public class ListFragment extends Fragment {
 
     public static ListFragment newInstance() {
@@ -38,19 +36,22 @@ public class ListFragment extends Fragment {
                 ListViewModelFactory.getInstance()
         ).get(ListViewModel.class);
 
-        configRecyclerViewAndTextView(viewModel);
+        configRecyclerView(viewModel);
+        configTextView(viewModel);
         configFab();
-        // TODO: config delete meeting button
     }
 
-    private void configRecyclerViewAndTextView(ListViewModel viewModel) {
+    private void configRecyclerView(ListViewModel viewModel) {
         final MeetingAdapter meetingAdapter = new MeetingAdapter();
         ((RecyclerView) requireView().findViewById(R.id.list_meeting)).setAdapter(meetingAdapter);
-        final TextView noMeeting = requireView().findViewById(R.id.no_meeting);
         viewModel.getMeetings().observe(getViewLifecycleOwner(), meetings -> {
-            meetingAdapter.submitList(new ArrayList<>(meetings));
+            meetingAdapter.submitList(meetings);
             viewModel.setTextViewVisibility(meetings.isEmpty());
         });
+    }
+
+    private void configTextView(ListViewModel viewModel) {
+        final TextView noMeeting = requireView().findViewById(R.id.no_meeting);
         viewModel.getTextViewVisibility().observe(getViewLifecycleOwner(), noMeeting::setVisibility);
     }
 

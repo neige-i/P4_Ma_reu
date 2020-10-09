@@ -11,7 +11,13 @@ public class AddViewModelFactory implements ViewModelProvider.Factory {
     private static AddViewModelFactory factory;
 
     public static AddViewModelFactory getInstance() {
-        return factory = factory == null ? new AddViewModelFactory() : factory;
+        if (factory == null) {
+            synchronized (AddViewModelFactory.class) {
+                if (factory == null)
+                    factory = new AddViewModelFactory();
+            }
+        }
+        return factory;
     }
 
     private AddViewModelFactory() {
@@ -22,7 +28,7 @@ public class AddViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(AddViewModel.class)) {
-            return (T) new AddViewModel(DI.getRepository()/*new MeetingRepositoryImpl()*/);
+            return (T) new AddViewModel(DI.getRepository(), DI.getClock());
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }
