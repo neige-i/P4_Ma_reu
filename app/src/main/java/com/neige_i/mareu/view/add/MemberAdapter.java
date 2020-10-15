@@ -15,18 +15,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
-import com.neige_i.mareu.view.model.MemberUi;
-
-import java.util.List;
+import com.neige_i.mareu.data.DI;
+import com.neige_i.mareu.view.add.model.MemberUi;
 
 public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberViewHolder> {
 
-    private final List<String> dropDown;
+    @NonNull
     private final OnMemberChangedListener onMemberChangedListener;
 
-    protected MemberAdapter(List<String> dropDown, OnMemberChangedListener onMemberChangedListener) {
+    protected MemberAdapter(@NonNull OnMemberChangedListener onMemberChangedListener) {
         super(new MemberDiffCallback());
-        this.dropDown = dropDown;
         this.onMemberChangedListener = onMemberChangedListener;
     }
 
@@ -34,10 +32,10 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
     @Override
     public MemberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new MemberViewHolder(LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.list_item_member,
-                parent,
-                false
-        ), onMemberChangedListener, dropDown);
+            R.layout.list_item_member,
+            parent,
+            false
+        ), onMemberChangedListener);
     }
 
     @Override
@@ -51,15 +49,15 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
         final TextInputLayout emailLayout;
         final ImageView removeButton;
 
-        public MemberViewHolder(View itemView, OnMemberChangedListener onMemberChangedListener, List<String> dropDown) {
+        public MemberViewHolder(@NonNull View itemView, @NonNull OnMemberChangedListener onMemberChangedListener) {
             super(itemView);
 
             // Config email
             email = itemView.findViewById(R.id.email_input);
             email.setAdapter(new ArrayAdapter<>(
-                    itemView.getContext(),
-                    android.R.layout.simple_list_item_1,
-                    dropDown
+                itemView.getContext(),
+                android.R.layout.simple_list_item_1,
+                DI.getAvailableMembers()
             ));
             email.setOnItemClickListener((parent, view, position, id) ->
                     onMemberChangedListener.onEmailChosen(getAdapterPosition(), parent.getItemAtPosition(position).toString()));
@@ -73,13 +71,12 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
                     onMemberChangedListener.onAddMember(getAdapterPosition()));
         }
 
-        void bind(MemberUi memberUi, OnMemberChangedListener onMemberChangedListener) {
+        void bind(@NonNull MemberUi memberUi, @NonNull OnMemberChangedListener onMemberChangedListener) {
             Log.d("Nino", "bind() called with: memberUi = [" + memberUi + "]");
             email.setText(memberUi.getEmail(), false);
             emailLayout.setError(memberUi.getEmailError());
             removeButton.setVisibility(memberUi.getRemoveButtonVisibility());
-            removeButton.setOnClickListener(v ->
-                                                onMemberChangedListener.onRemoveMember(memberUi));
+            removeButton.setOnClickListener(v -> onMemberChangedListener.onRemoveMember(memberUi));
         }
     }
 
@@ -98,7 +95,7 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
 
     interface OnMemberChangedListener {
         void onAddMember(int position);
-        void onRemoveMember(MemberUi memberUi);
-        void onEmailChosen(int position, String email);
+        void onRemoveMember(@NonNull MemberUi memberUi);
+        void onEmailChosen(int position, @NonNull String email);
     }
 }

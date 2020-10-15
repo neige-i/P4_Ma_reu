@@ -1,42 +1,32 @@
 package com.neige_i.mareu.view.add;
 
-import android.util.Log;
+import android.content.Context;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.neige_i.mareu.R;
-import com.neige_i.mareu.data.MeetingRepository;
-import com.neige_i.mareu.data.MeetingRepositoryImpl;
-import com.neige_i.mareu.data.model.Meeting;
-import com.neige_i.mareu.view.model.MeetingUi;
-import com.neige_i.mareu.view.model.MemberUi;
+import com.neige_i.mareu.data.DI;
+import com.neige_i.mareu.view.add.model.MeetingUi;
+import com.neige_i.mareu.view.add.model.MemberUi;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.BDDMockito;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,161 +35,691 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class AddViewModelTest {
+
+    // ---------- TEST RULE
 
     // Avoid error when MutableLiveData.setValue() is called in source code
     @Rule
     public final TestRule rule = new InstantTaskExecutorRule();
 
-//    @Mock
-    private final MeetingRepository repository = new MeetingRepositoryImpl();//Mockito.mock(MeetingRepository.class);
+    // ---------- REQUIRED DATA TO INITIALIZE THE VIEW MODEL
 
-    private final AddViewModel viewModel = new AddViewModel(repository, Clock.fixed(
-        ZonedDateTime.of(2020, 9, 25, 20, 10, 30, 150, ZoneId.systemDefault()).toInstant(),
-        ZoneId.systemDefault()
+//    @NonNull
+//    private final MeetingRepository repository = DI.getRepository();
+    @NonNull
+    private final List<String> availableMembers = DI.getAvailableMembers();
+    @NonNull
+    private final MutableLiveData<MeetingUi> meetingUi = DI.getMeetingUi();
+    @NonNull
+    private final LocalDate defaultDate = LocalDate.of(2020, 9, 20);
+    @NonNull
+    private final LocalTime defaultTime = LocalTime.of(20, 10);
+    @NonNull
+    private final ZoneId defaultZoneId = ZoneId.systemDefault();
+    @Mock
+    private final Context context = Mockito.mock(Context.class);
+
+    // ---------- OBJECT UNDER TEST
+
+    @NonNull
+    private final AddViewModel viewModel = new AddViewModel(DI.getRepository(), meetingUi, Clock.fixed(
+        ZonedDateTime.of(defaultDate, defaultTime, defaultZoneId).toInstant(),
+        defaultZoneId
     ));
 
+    // ---------- OTHER LOCAL VARIABLE
+
+    @NonNull
+    private final String NON_NULL = "arbitrary non-null value";
+
+    // ---------- TEST TOPIC
+
+    // ASKME: duplicate code
     @Test
-    public void onTopicChanged_nonEmptyString() {
-        // Given: all errors being displayed
-        // This happens when the 'add meeting' button is clicked while no entry has been set
-        viewModel.onAddMeeting();
+    public void onTopicChanged_nonEmptyString_withoutError() {
+        // Given: a null topic error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            /*this*/ null, null, null, null, null,
+            new ArrayList<>()
+        ));
 
-        // ASKME: no need to assert before changing values
-        // When: the topic is changed to a non empty String
-        viewModel.onTopicChanged("New topic value");
+        // When: the topic is changed to a non-empty String
+        final String expectedTopic = "Some value";
+        viewModel.onTopicChanged(expectedTopic);
 
-        // Then: the meetingUi's topic is updated and its error message is set to null
+        // Then: the topic value is updated and the error remains null
         final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
-        assertNotNull(meetingUi);
-        assertEquals("New topic value", meetingUi.getTopic());
+        assertEquals(expectedTopic, meetingUi.getTopic());
         assertNull(meetingUi.getTopicError());
     }
 
     @Test
-    public void onTopicChanged_emptyString() {
-        // ASKME: should test all 4 cases for this method
-        // Given: all errors being displayed
-        viewModel.onAddMeeting();
+    public void onTopicChanged_emptyString_withoutError() {
+        // Given: a null topic error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            /*this*/ null, null, null, null, null,
+            new ArrayList<>()
+        ));
 
-        // When: the topic is changed to an empty String (or similar)
-        viewModel.onTopicChanged("   ");
+        // When: the topic is changed to an empty String (or something similar)
+        final String expectedTopic = "   ";
+        viewModel.onTopicChanged(expectedTopic);
 
-        // Then: the meetingUi's topic is updated but its error message remains
+        // Then: the topic value is updated and the error remains null
         final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
-        assertNotNull(meetingUi);
-        assertEquals("   ", meetingUi.getTopic());
+        assertEquals(expectedTopic, meetingUi.getTopic());
+        assertNull(meetingUi.getTopicError());
+    }
+
+    @Test
+    public void onTopicChanged_nonEmptyString_withError() {
+        // Given: a non-null topic error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            NON_NULL, null, null, null, null,
+            new ArrayList<>()
+        ));
+        // ASKME: using repo to get an initial state of the LiveData instead of calling ViewModel's method
+//        viewModel.onAddMeeting(context);
+
+        // When: the topic is changed to a non-empty String
+        final String expectedTopic = "Some value";
+        viewModel.onTopicChanged(expectedTopic);
+
+        // Then: the topic value is updated and the error is removed (i.e. equals null)
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedTopic, meetingUi.getTopic());
+        assertNull(meetingUi.getTopicError());
+    }
+
+    @Test
+    public void onTopicChanged_emptyString_withError() {
+        // Given: a non-null topic error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            NON_NULL, null, null, null, null,
+            new ArrayList<>()
+        ));
+
+        // When: the topic is changed to an empty String (or something similar)
+        final String expectedTopic = "   ";
+        viewModel.onTopicChanged(expectedTopic);
+
+        // Then: the topic value is updated but the error is not removed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedTopic, meetingUi.getTopic());
         assertNotNull(meetingUi.getTopicError());
     }
 
+    // ---------- TEST DATE
+
     @Test
-    public void onDateClicked() {
+    public void onDateClicked_empty() {
+        // Given: a date which has not been set yet
+        meetingUi.setValue(new MeetingUi(
+            "", /*this*/ "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>()
+        ));
+
         // When: the date input is clicked
         viewModel.onDateClicked();
-        // Then: the correct time is set
-        assertEquals(LocalDate.of(2020, 9, 25), viewModel.getDatePicker().getValue());
+
+        // Then: the date picker equals the default date value
+        assertEquals(defaultDate, viewModel.getDatePicker().getValue());
     }
 
     @Test
-    public void onDateValidated() {
-        // Given: all errors being displayed
-        viewModel.onAddMeeting();
+    public void onDateClicked_nonEmpty() {
+        // Given: a date which has been set
+        meetingUi.setValue(new MeetingUi(
+            "", "12/10/2020", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>()
+        ));
 
-        // When: the date is changed to October, 1st 2020
-        viewModel.onDateValidated(2020, 10, 1);
+        // When: the date input is clicked
+        viewModel.onDateClicked();
 
-        // Then: the meetingUi's date is updated and its error message is set to null
+        // Then: the date picker equals the expected date value
+        assertEquals(LocalDate.of(2020, 10, 12), viewModel.getDatePicker().getValue());
+    }
+
+    @Test
+    public void onDateChanged_withoutError() {
+        // Given: a null date error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, /*this*/ null, null, null, null,
+            new ArrayList<>()
+        ));
+
+        // When: the date value is changed
+        viewModel.onDateChanged(2020, 10, 12);
+
+        // Then: the date value is updated and the error remains null
         final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
-        assertNotNull(meetingUi);
-        assertEquals("01/10/2020", meetingUi.getDate());
+        // ASKME: hard-coded LocalDate instead
+//        final String expectedDate = LocalDate.of(2020, 10, 12).format(DATE_FORMAT);
+//        assertEquals(expectedDate, meetingUi.getDate());
+        assertEquals("12/10/2020", meetingUi.getDate());
         assertNull(meetingUi.getDateError());
     }
 
     @Test
-    public void onTimeClicked() {
-        // When: the time input is clicked
-        viewModel.onTimeClicked();
-        // Then: the correct date is set
-        assertEquals(LocalTime.of(20, 10, 30, 150), viewModel.getTimePicker().getValue());
+    public void onDateChanged_withError() {
+        // Given: a non-null date error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, NON_NULL, null, null, null,
+            new ArrayList<>()
+        ));
+
+        // When: the date value is changed
+        viewModel.onDateChanged(2020, 10, 12);
+
+        // Then: the date value is updated and the error is removed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("12/10/2020", meetingUi.getDate());
+        assertNull(meetingUi.getDateError());
+    }
+
+    // ---------- TEST TIME
+
+    @Test
+    public void onTimeClicked_emptyStart_nonEmptyEnd() {
+        // Given: a start time which has not been set yet and an end time which has been set
+        meetingUi.setValue(new MeetingUi(
+            "", "", /*this*/ "", "14:05", "",
+            null, null, null, null, null,
+            new ArrayList<>()
+        ));
+
+        // When: the start time input is clicked
+        viewModel.onTimeClicked(R.id.start_time_input);
+
+        // Then: the time picker equals the default date value
+        assertEquals(defaultTime, viewModel.getTimePicker().getValue());
+
+        // ASKME: 2 When-Then
+
+        // When: the end time input is clicked
+        viewModel.onTimeClicked(R.id.end_time_input);
+
+        // Then: the time picker equals the expected time value
+        assertEquals(LocalTime.of(14, 5), viewModel.getTimePicker().getValue());
     }
 
     @Test
-    public void onTimeValidated() {
-        // Given: all errors being displayed
-        viewModel.onAddMeeting();
+    public void onTimeClicked_nonEmptyStart_emptyEnd() {
+        // Given: a start time which has been set and an end time which has not been set yet
+        meetingUi.setValue(new MeetingUi(
+            "", "", "14:15", /*this*/ "", "",
+            null, null, null, null, null,
+            new ArrayList<>()
+        ));
 
-        // When: the time is changed to 23h59
-        viewModel.onTimeValidated(23, 59);
+        // When: the start time input is clicked
+        viewModel.onTimeClicked(R.id.start_time_input);
 
-        // Then: the meetingUi's time is updated and its error message is set to null
-        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
-        assertNotNull(meetingUi);
-        assertEquals("23:59", meetingUi.getTimeStart());
-        assertNull(meetingUi.getTimeStartError());
+        // Then: the time picker equals the expected time value
+        assertEquals(LocalTime.of(14, 15), viewModel.getTimePicker().getValue());
+
+        // When: the end time input is clicked
+        viewModel.onTimeClicked(R.id.end_time_input);
+
+        // Then: the time picker equals the default date value
+        assertEquals(defaultTime, viewModel.getTimePicker().getValue());
     }
 
     @Test
-    public void onPlaceSelected() {
-        // Given: all errors being displayed
-        viewModel.onAddMeeting();
+    public void onTimeChanged_start_withoutError() {
+        // Given: the start time input being clicked and a null start time error
+        viewModel.onTimeClicked(R.id.start_time_input);
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, /*this*/ null, null, null,
+            new ArrayList<>()
+        ));
 
-        // When: the place is changed
-        viewModel.onPlaceSelected("New room name");
+        // When: the start time value is changed
+        viewModel.onTimeChanged(14, 20, context);
 
-        // Then: the meetingUi's place is updated and its error message is set to null
+        // Then: the start time value is updated and the error remains null
         final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
-        assertNotNull(meetingUi);
-        assertEquals("New room name", meetingUi.getPlace());
+        assertEquals("14:20", meetingUi.getStartTime());
+        assertNull(meetingUi.getStartTimeError());
+    }
+
+    @Test
+    public void onTimeChanged_end_withoutError() {
+        // Given: the end time input being clicked and a null end time error
+        viewModel.onTimeClicked(R.id.end_time_input);
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, /*this*/ null, null,
+            new ArrayList<>()
+        ));
+
+        // When: the end time value is changed
+        viewModel.onTimeChanged(14, 20, context);
+
+        // Then: the end time value is updated and the error remains null
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:20", meetingUi.getEndTime());
+        assertNull(meetingUi.getEndTimeError());
+    }
+
+    @Test
+    public void onTimeChanged_start_withError() {
+        // Given: the start time input being clicked and a non-null start time error
+        viewModel.onTimeClicked(R.id.start_time_input);
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, NON_NULL, null, null,
+            new ArrayList<>()
+        ));
+
+        // When: the start time value is changed
+        viewModel.onTimeChanged(14, 20, context);
+
+        // Then: the start time value is updated and the error is removed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:20", meetingUi.getStartTime());
+        assertNull(meetingUi.getStartTimeError());
+    }
+
+    @Test
+    public void onTimeChanged_end_withError() {
+        // Given: the end time input being clicked and a non-null end time error
+        viewModel.onTimeClicked(R.id.end_time_input);
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, NON_NULL, null,
+            new ArrayList<>()
+        ));
+
+        // When: the end time value is changed
+        viewModel.onTimeChanged(14, 20, context);
+
+        // Then: the end time value is updated and the error is removed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:20", meetingUi.getEndTime());
+        assertNull(meetingUi.getEndTimeError());
+    }
+
+    // ASKME: never too many method
+
+    @Test
+    public void onTimeChanged_startBeforeEnd() {
+        // Given: the start time input being clicked and a preset end time value
+        viewModel.onTimeClicked(R.id.start_time_input);
+        setEndValueTo14_30();
+
+        // When: the start time value is changed to a time before the end one
+        viewModel.onTimeChanged(14, 29, context);
+
+        // Then: the start time value is updated and the error remains null
+        MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:29", meetingUi.getStartTime());
+        assertNull(meetingUi.getStartTimeError());
+    }
+
+    @Test
+    public void onTimeChanged_startEqualsEnd() {
+        // Given: the start time input being clicked and a preset end time value
+        viewModel.onTimeClicked(R.id.start_time_input);
+        setEndValueTo14_30();
+
+        // When: the start time value is changed to the same time as the end one
+        // FIXME: incorrect mock
+        when(context.getString(R.string.start_time_error, meetingUi.getValue().getEndTime())).thenReturn("");
+        viewModel.onTimeChanged(14, 30, context);
+
+        // Then: the start time value is updated and an error is triggered
+        MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:30", meetingUi.getStartTime());
+        assertNotNull(meetingUi.getStartTimeError());
+    }
+
+    @Test
+    public void onTimeChanged_startAfterEnd() {
+        // Given: the start time input being clicked and a preset end time value
+        viewModel.onTimeClicked(R.id.start_time_input);
+        setEndValueTo14_30();
+
+        // When: the start time value is changed to a time after the end one
+        when(context.getString(R.string.start_time_error, meetingUi.getValue().getEndTime())).thenReturn("");
+        viewModel.onTimeChanged(14, 31, context);
+
+        // Then: the start time value is updated and an error is triggered
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:31", meetingUi.getStartTime());
+        assertNotNull(meetingUi.getStartTimeError());
+    }
+
+    private void setEndValueTo14_30() {
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "14:30", "",
+            null, null, null, null, null,
+            new ArrayList<>()
+        ));
+    }
+
+    @Test
+    public void onTimeChanged_endAfterStart() {
+        // Given: the end time input being clicked and a preset start time value
+        viewModel.onTimeClicked(R.id.end_time_input);
+        setStartValueTo14_30();
+
+        // When: the end time value is changed to a time after the start one
+        viewModel.onTimeChanged(14, 31, context);
+
+        // Then: the end time value is updated and the error remains null
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:31", meetingUi.getEndTime());
+        assertNull(meetingUi.getEndTimeError());
+    }
+
+    @Test
+    public void onTimeChanged_endEqualsStart() {
+        // Given: the end time input being clicked and a preset start time value
+        viewModel.onTimeClicked(R.id.end_time_input);
+        setStartValueTo14_30();
+
+        // When: the end time value is changed to the same time as the start one
+        when(context.getString(R.string.end_time_error, meetingUi.getValue().getStartTime())).thenReturn("");
+        viewModel.onTimeChanged(14, 30, context);
+
+        // Then: the end time value is updated and an error is triggered
+        MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:30", meetingUi.getEndTime());
+        assertNotNull(meetingUi.getEndTimeError());
+    }
+
+    @Test
+    public void onTimeChanged_endBeforeStart() {
+        // Given: the end time input being clicked and a preset start time value
+        viewModel.onTimeClicked(R.id.end_time_input);
+        setStartValueTo14_30();
+
+        // When: the end time value is changed to a time before the start one
+        when(context.getString(R.string.end_time_error, meetingUi.getValue().getStartTime())).thenReturn("");
+        viewModel.onTimeChanged(14, 29, context);
+
+        // Then: the end time value is updated and an error is triggered
+        MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals("14:29", meetingUi.getEndTime());
+        assertNotNull(meetingUi.getEndTimeError());
+    }
+
+    private void setStartValueTo14_30() {
+        meetingUi.setValue(new MeetingUi(
+            "", "", "14:30", "", "",
+            null, null, null, null, null,
+            new ArrayList<>()
+        ));
+    }
+
+    // ---------- TEST PLACE
+
+    @Test
+    public void onPlaceChanged_withoutError() {
+        // Given: a null place error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, /*this*/ null,
+            new ArrayList<>()
+        ));
+
+        // When: the place value is changed
+        final String expectedPlace = "place";
+        viewModel.onPlaceChanged(expectedPlace);
+
+        // Then: the place value is updated and the error remains null
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedPlace, meetingUi.getPlace());
         assertNull(meetingUi.getPlaceError());
     }
 
     @Test
-    public void onAddMember() {
-        // Given: add 3 members after the current one
-        for (int i = 0; i < 3; i++) {
-            viewModel.onAddMember(0);
-        }
+    public void onPlaceChanged_withError() {
+        // Given: a non-null place error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, NON_NULL,
+            new ArrayList<>()
+        ));
 
-        // When: add a last member just after the 2nd in the list
-        viewModel.onAddMember(1);
+        // When: the place value is changed
+        final String expectedPlace = "place";
+        viewModel.onPlaceChanged(expectedPlace);
 
-        // Then: ...
-        final List<MemberUi> memberUiList = viewModel.getMeetingUiLiveData().getValue().getMemberList();
-        System.out.println(viewModel.getMeetingUiLiveData().getValue().getMemberList());
-        int lastMemberPosition = -1;
-        for (int position = 0; position < memberUiList.size(); position++) {
-            if (memberUiList.get(position).getId() == 4) { // The last added member is the 5th one which ID is 4
-                lastMemberPosition = position;
-                break;
-            }
-        }
-        assertEquals(View.VISIBLE, memberUiList.get(0).getRemoveButtonVisibility()); // ...the first member's 'remove button' is visible
-        assertEquals(2, lastMemberPosition); // ...the last member is in the 3rd position
-//        assertEquals(4, memberUiList.get(2).getId());
-        assertEquals(5, memberUiList.size()); // ...the members' list has the correct size
+        // Then: the date value is updated and the error is removed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedPlace, meetingUi.getPlace());
+        assertNull(meetingUi.getPlaceError());
+    }
+
+    // ---------- TEST MEMBER LIST
+
+    @Test
+    public void onAddMember_correctPosition() {
+        // Given: a member list with 4 elements
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            // A member with ID = 0 is automatically created in DI
+            new ArrayList<>(Arrays.asList(
+                new MemberUi("", null, View.VISIBLE), // ID = 1
+                new MemberUi("", null, View.VISIBLE), // ID = 2
+                new MemberUi("", null, View.VISIBLE), // ID = 3
+                new MemberUi("", null, View.VISIBLE) // ID = 4
+            ))
+        ));
+
+        // When: a member is added after the second element
+        viewModel.onAddMember(1); // ID = 5
+
+        // ASKME: correct assertion
+        // Then: the member list contains the last added member (with ID 5) at the 3rd position
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(5, meetingUi.getMemberList().size());
+        assertEquals(2, meetingUi.getMemberList().indexOf(new MemberUi(5, "", null, View.VISIBLE)));
     }
 
     @Test
-    public void onRemoveMember() {
-        // Given: add a member after the current one and change the first member's email
+    public void onAddMember_changeButtonVisibility() {
+        // Given: a member list with an only element
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Collections.singletonList(new MemberUi("", null, View.INVISIBLE)))
+        ));
+
+        // When: a member is added to the list
         viewModel.onAddMember(0);
-        viewModel.onUpdateMember(0, "firstEmail");
 
-        // When: remove the 1st member
-        final MemberUi memberToRemove = new MemberUi(0, "firstEmail", null, View.VISIBLE);
-        viewModel.onRemoveMember(memberToRemove);
-
-        // Then: ...
-        final List<MemberUi> memberUiList = viewModel.getMeetingUiLiveData().getValue().getMemberList();
-        final List<String> availableMembers = viewModel.getMeetingUiLiveData().getValue().getAvailableMembers();
-        assertTrue(availableMembers.contains("firstEmail")); // ...the available members contains the removed member's email
-        assertFalse(memberUiList.contains(memberToRemove)); // ...the list doesn't contain the member anymore
-        assertEquals(View.INVISIBLE, memberUiList.get(0).getRemoveButtonVisibility()); // ...the first member's 'remove button' is invisible
-        assertEquals(1, memberUiList.size()); // ...the members' list has the correct size
+        // Then: the member list size has increased and the first element's button visibility has changed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(2, meetingUi.getMemberList().size());
+        assertEquals(View.VISIBLE, meetingUi.getMemberList().get(0).getRemoveButtonVisibility());
     }
 
+    @Test
+    public void onRemoveMember_nonEmptyEmail() {
+        // Given: a member list with 3 elements and a preset list of available members
+        final MemberUi memberToRemove = new MemberUi(10, "maxime@lamzone.com", null, View.VISIBLE);
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Arrays.asList(
+                memberToRemove,
+                new MemberUi(11, "", null, View.VISIBLE),
+                new MemberUi(12, "", null, View.VISIBLE)
+            ))
+        ));
+        initAvailableMembers("maxime@lamzone.com"); // availableMembers size = 7
+
+        // When: a member (with a non-empty email) is removed from the list
+        viewModel.onRemoveMember(memberToRemove);
+
+        // Then: the member list size has decreased and the available member list contains the removed member's email
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(2, meetingUi.getMemberList().size());
+        assertFalse(meetingUi.getMemberList().contains(memberToRemove)); // ASKME: both assertions useful
+        assertEquals(8, availableMembers.size());
+        assertTrue(availableMembers.contains("maxime@lamzone.com"));
+    }
+
+    @Test
+    public void onRemoveMember_emptyEmail() {
+        // Given: a member list with an 2 elements and the default list of available members
+        final MemberUi memberToRemove = new MemberUi(21, "", null, View.VISIBLE);
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Arrays.asList(
+                new MemberUi(21, "", null, View.VISIBLE),
+                new MemberUi(22, "", null, View.VISIBLE)
+            ))
+        ));
+        
+
+        // When: a member (with an empty email) is removed from the list
+        viewModel.onRemoveMember(memberToRemove);
+
+        // Then: the member list size has decreased but the available member list is unchanged
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(1, meetingUi.getMemberList().size());
+        assertFalse(meetingUi.getMemberList().contains(memberToRemove));
+        assertEquals(3, availableMembers.size());
+        assertFalse(availableMembers.contains(""));
+    }
+
+    @Test
+    public void onRemoveMember_changeButtonVisibility() {
+        // Given: a member list with an 2 elements
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Arrays.asList(
+                new MemberUi(50, "", null, View.VISIBLE),
+                new MemberUi(51, "", null, View.VISIBLE)
+            ))
+        ));
+
+        // When: a member is removed from the list
+        final MemberUi memberToRemove = new MemberUi(50, "", null, View.VISIBLE);
+        viewModel.onRemoveMember(memberToRemove);
+
+        // Then: the member list size has decreased and the first element's button visibility has changed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(1, meetingUi.getMemberList().size());
+        assertFalse(meetingUi.getMemberList().contains(memberToRemove));
+        assertEquals(View.INVISIBLE, meetingUi.getMemberList().get(0).getRemoveButtonVisibility());
+    }
+
+    @Test
+    public void onUpdateMember_withoutError() {
+        // Given: a null email error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Collections.singletonList(new MemberUi("", null, View.INVISIBLE)))
+        ));
+
+        // When: the email value is changed
+        final String expectedEmail = "email";
+        viewModel.onUpdateMember(0, expectedEmail);
+
+        // Then: the email value is updated and the error remains null
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedEmail, meetingUi.getMemberList().get(0).getEmail());
+        assertNull(meetingUi.getMemberList().get(0).getEmailError());
+    }
+
+    @Test
+    public void onUpdateMember_withError() {
+        // Given: a non-null email error
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Collections.singletonList(new MemberUi("", NON_NULL, View.INVISIBLE)))
+        ));
+
+        // When: the email value is changed
+        final String expectedEmail = "email";
+        viewModel.onUpdateMember(0, expectedEmail);
+
+        // Then: the email value is updated and the error is removed
+        final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedEmail, meetingUi.getMemberList().get(0).getEmail());
+        assertNull(meetingUi.getMemberList().get(0).getEmailError());
+    }
+
+    @Test
+    public void onUpdateMember_nonEmptyOldEmail() {
+        // Given: a member list with an 3 elements and a preset list of available members
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Arrays.asList(
+                new MemberUi(60, "email0", null, View.VISIBLE),
+                new MemberUi(61, "", null, View.VISIBLE),
+                new MemberUi(62, "", null, View.VISIBLE)
+            ))
+        ));
+
+        // When: the first member's email (which is non_empty) is changed with the second value of the available members
+        MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        final String expectedEmail = availableMembers.get(1);
+        viewModel.onUpdateMember(0, expectedEmail);
+
+        // Then: the email value is updated and the available member list is changed
+        meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedEmail, meetingUi.getMemberList().get(0).getEmail());
+        assertEquals(3, availableMembers.size());
+        assertFalse(availableMembers.contains(expectedEmail));
+        assertTrue(availableMembers.contains("email0"));
+    }
+
+    @Test
+    public void onUpdateMember_emptyOldEmail() {
+        // Given: a member list with an 3 elements and a preset list of available members
+        meetingUi.setValue(new MeetingUi(
+            "", "", "", "", "",
+            null, null, null, null, null,
+            new ArrayList<>(Arrays.asList(
+                new MemberUi(70, "email0", null, View.VISIBLE),
+                new MemberUi(71, "", null, View.VISIBLE),
+                new MemberUi(72, "", null, View.VISIBLE)
+            ))
+        ));
+
+        // When: the second member's email (which is non_empty) is changed with the first value of the available members
+        MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        final String expectedEmail = availableMembers.get(0);
+        viewModel.onUpdateMember(1, expectedEmail);
+
+        // Then: the email value is updated and the available member list is changed
+        meetingUi = viewModel.getMeetingUiLiveData().getValue();
+        assertEquals(expectedEmail, meetingUi.getMemberList().get(1).getEmail());
+        assertEquals(2, availableMembers.size());
+        assertFalse(availableMembers.contains(expectedEmail));
+        assertFalse(availableMembers.contains(""));
+    }
+
+    private void initAvailableMembers(String... email) {
+        availableMembers.removeAll(Arrays.asList(email));
+    }
+/*
     @Test
     public void onUpdateMember() {
         // Given: change the first member's email
@@ -222,9 +742,9 @@ public class AddViewModelTest {
     public void onAddMeeting_allFieldsOk() {
         //Given: fill the required fields
         viewModel.onTopicChanged("topic");
-        viewModel.onDateValidated(2020, 10, 1);
-        viewModel.onTimeValidated(23, 59);
-        viewModel.onPlaceSelected("place");
+        viewModel.onDateChanged(2020, 10, 1);
+        viewModel.onTimeChanged(23, 59);
+        viewModel.onPlaceChanged("place");
         viewModel.onUpdateMember(0, "email");
 
         // When: add the meeting
@@ -256,9 +776,9 @@ public class AddViewModelTest {
     public void onAddMeeting_meetingAlreadyExisting() {
         // Given: fill the required fields with the same place and date/time as the meeting which is contained in repository
         viewModel.onTopicChanged("new topic");
-        viewModel.onDateValidated(2020, 10, 1);
-        viewModel.onTimeValidated(23, 59);
-        viewModel.onPlaceSelected("place");
+        viewModel.onDateChanged(2020, 10, 1);
+        viewModel.onStartTimeValidated(23, 59);
+        viewModel.onPlaceChanged("place");
         viewModel.onUpdateMember(0, "new email");
         repository.addMeeting(new Meeting(
             "topic",
@@ -273,4 +793,5 @@ public class AddViewModelTest {
         // Then: the Snackbar shows a specific message
         assertEquals(R.string.meeting_already_exist, viewModel.getShowSnack().getValue().intValue());
     }
+ */
 }

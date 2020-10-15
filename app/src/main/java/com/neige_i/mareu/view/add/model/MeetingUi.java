@@ -1,12 +1,9 @@
-// TODO: move package
-package com.neige_i.mareu.view.model;
+package com.neige_i.mareu.view.add.model;
 
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.neige_i.mareu.data.DummyGenerator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,13 +17,14 @@ public class MeetingUi {
     // ---------- INSTANCE VARIABLE
 
     // TextInputEditText's content
-    // ASKME: NonNull vs Nullable?
     @NonNull
     private final String topic;
     @NonNull
     private final String date;
     @NonNull
-    private final String timeStart;
+    private final String startTime;
+    @NonNull
+    private final String endTime;
     @NonNull
     private final String place;
 
@@ -36,44 +34,47 @@ public class MeetingUi {
     @Nullable
     private final String dateError;
     @Nullable
-    private final String timeStartError;
+    private final String startTimeError;
+    @Nullable
+    private final String endTimeError;
     @Nullable
     private final String placeError;
 
     @NonNull
     private final List<MemberUi> memberList;
-    @NonNull
-    private final List<String> availableMembers;
 
     // ---------- CONSTRUCTOR
 
     public MeetingUi() {
-        this.topic = "";
-        this.date = "";
-        this.timeStart = "";
-        this.place = "";
-        this.topicError = null;
-        this.dateError = null;
-        this.timeStartError = null;
-        this.placeError = null;
-        this.memberList = new ArrayList<>(Collections.singletonList(new MemberUi("", null, View.INVISIBLE)));
-        availableMembers = new ArrayList<>(DummyGenerator.generateEmailAddresses());
+        topic = "";
+        date = "";
+        startTime = "";
+        endTime = "";
+        place = "";
+        topicError = null;
+        dateError = null;
+        startTimeError = null;
+        endTimeError = null;
+        placeError = null;
+        memberList = new ArrayList<>(Collections.singletonList(new MemberUi("", null, View.INVISIBLE)));
     }
 
-    public MeetingUi(@NonNull String topic, @NonNull String date, @NonNull String timeStart,
-                     @NonNull String place, @Nullable String topicError, @Nullable String dateError,
-                     @Nullable String timeStartError, @Nullable String placeError,
-                     @NonNull List<MemberUi> memberList, @NonNull List<String> availableMembers) {
+    public MeetingUi(@NonNull String topic, @NonNull String date, @NonNull String startTime,
+                     @NonNull String endTime, @NonNull String place, @Nullable String topicError,
+                     @Nullable String dateError, @Nullable String startTimeError,
+                     @Nullable String endTimeError, @Nullable String placeError,
+                     @NonNull List<MemberUi> memberList) {
         this.topic = topic;
         this.date = date;
-        this.timeStart = timeStart;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.place = place;
         this.topicError = topicError;
         this.dateError = dateError;
-        this.timeStartError = timeStartError;
+        this.startTimeError = startTimeError;
+        this.endTimeError = endTimeError;
         this.placeError = placeError;
         this.memberList = memberList;
-        this.availableMembers = availableMembers;
     }
 
     // ---------- GETTER
@@ -89,8 +90,13 @@ public class MeetingUi {
     }
 
     @NonNull
-    public String getTimeStart() {
-        return timeStart;
+    public String getStartTime() {
+        return startTime;
+    }
+
+    @NonNull
+    public String getEndTime() {
+        return endTime;
     }
 
     @NonNull
@@ -109,8 +115,13 @@ public class MeetingUi {
     }
 
     @Nullable
-    public String getTimeStartError() {
-        return timeStartError;
+    public String getStartTimeError() {
+        return startTimeError;
+    }
+
+    @Nullable
+    public String getEndTimeError() {
+        return endTimeError;
     }
 
     @Nullable
@@ -124,23 +135,20 @@ public class MeetingUi {
     }
 
     @NonNull
-    public List<String> getAvailableMembers() {
-        return availableMembers;
-    }
-
     @Override
     public String toString() {
         return "MeetingUi{" +
             "topic='" + topic + '\'' +
             ", date='" + date + '\'' +
-            ", timeStart='" + timeStart + '\'' +
+            ", startTime='" + startTime + '\'' +
+            ", endTime='" + endTime + '\'' +
             ", place='" + place + '\'' +
             ", errors[='" + topicError + '\'' +
             ", '" + dateError + '\'' +
-            ", '" + timeStartError + '\'' +
+            ", '" + startTimeError + '\'' +
+            ", '" + endTimeError + '\'' +
             ", '" + placeError + '\'' +
             "], memberList=" + memberList.size() +
-            ", availableMembers=" + availableMembers.size() +
             '}';
     }
 }

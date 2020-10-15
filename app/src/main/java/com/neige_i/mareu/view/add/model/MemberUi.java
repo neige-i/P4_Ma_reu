@@ -1,4 +1,4 @@
-package com.neige_i.mareu.view.model;
+package com.neige_i.mareu.view.add.model;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

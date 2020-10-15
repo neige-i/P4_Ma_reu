@@ -8,8 +8,10 @@ import com.neige_i.mareu.data.DI;
 
 public class AddViewModelFactory implements ViewModelProvider.Factory {
 
+    @NonNull
     private static AddViewModelFactory factory;
 
+    @NonNull
     public static AddViewModelFactory getInstance() {
         if (factory == null) {
             synchronized (AddViewModelFactory.class) {
@@ -28,7 +30,8 @@ public class AddViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(AddViewModel.class)) {
-            return (T) new AddViewModel(DI.getRepository(), DI.getClock());
+            // ASKME: get ModelUi from DI for testing
+            return (T) new AddViewModel(DI.getRepository(), DI.getMeetingUi(), DI.getClock());
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

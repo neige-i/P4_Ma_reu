@@ -14,6 +14,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.model.Meeting;
 
+import static com.neige_i.mareu.view.util.Util.DATE_FORMAT;
+import static com.neige_i.mareu.view.util.Util.TIME_FORMAT;
+
 public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingViewHolder> {
 
     protected MeetingAdapter() {
@@ -24,9 +27,9 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
     @Override
     public MeetingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new MeetingViewHolder(LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.list_item_meeting,
-                parent,
-                false
+            R.layout.list_item_meeting,
+            parent,
+            false
         ));
     }
 
@@ -38,24 +41,30 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
     static class MeetingViewHolder extends RecyclerView.ViewHolder {
 
         private final ImageView image;
-        private final TextView mainInfo;
+        private final TextView topicAndPlace;
+        private final TextView dateAndTime;
         private final TextView members;
 
         public MeetingViewHolder(@NonNull View itemView) {
             super(itemView);
 
             image = itemView.findViewById(R.id.image);
-            mainInfo = itemView.findViewById(R.id.main_info);
+            topicAndPlace = itemView.findViewById(R.id.topic_and_place);
+            dateAndTime = itemView.findViewById(R.id.date_and_time);
             members = itemView.findViewById(R.id.members);
         }
 
         void bind(Meeting meeting) {
-            mainInfo.setText(itemView.getResources().getString(
-                    R.string.meeting_main_info,
-                    meeting.getTopic(),
-                    meeting.getStartDateTime().getHour(),
-                    meeting.getStartDateTime().getMinute(),
-                    meeting.getPlace()
+            topicAndPlace.setText(itemView.getResources().getString(
+                R.string.topic_and_place,
+                meeting.getTopic(),
+                meeting.getPlace()
+            ));
+            dateAndTime.setText(itemView.getResources().getString(
+                R.string.start_and_end_time,
+                meeting.getStartDateTime().toLocalDate().format(DATE_FORMAT),
+                meeting.getStartDateTime().toLocalTime().format(TIME_FORMAT),
+                meeting.getEndDateTime().toLocalTime().format(TIME_FORMAT)
             ));
             members.setText(meeting.getEmailList().toString());
         }

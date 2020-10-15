@@ -1,5 +1,6 @@
 package com.neige_i.mareu.data;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -10,8 +11,10 @@ import java.util.List;
 
 public class MeetingRepositoryImpl implements MeetingRepository {
 
+    @NonNull
     private final MutableLiveData<List<Meeting>> meetingList = new MutableLiveData<>(new ArrayList<>());
 
+    @NonNull
     @Override
     public LiveData<List<Meeting>> getAllMeetings() {
         return meetingList;

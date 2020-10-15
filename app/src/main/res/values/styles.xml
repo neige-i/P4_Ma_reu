@@ -5,7 +5,16 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- Change the default appearance for TextInputLayout from FilledBox to OutlinedBox -->
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
+
+        <item name="materialThemeOverlay">@style/CustomOverlay</item>
     </style>
 
-    <!-- TODO: change FAB style -->
+    <!-- Change the foreground and background color for FloatingActionButton -->
+    <style name="CustomOverlay">
+        <item name="colorSecondary">@color/colorAccent</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+    </style>
 </resources>

@@ -14,31 +14,36 @@ public class Meeting {
     // ---------- INSTANCE VARIABLE
 
     private final int id;
-    @NonNull private final String topic;
-    @NonNull private final String place;
-    @NonNull private final LocalDateTime startDateTime; // TODO: add endDateTime
-    @NonNull private final List<String> emailList;
+    @NonNull
+    private final String topic;
+    @NonNull
+    private final String place;
+    @NonNull
+    private final LocalDateTime startDateTime;
+    @NonNull
+    private final LocalDateTime endDateTime;
+    @NonNull
+    private final List<String> emailList;
 
     // ---------- CONSTRUCTOR
 
     public Meeting(int id, @NonNull String topic, @NonNull String place,
-                   @NonNull LocalDateTime startDateTime,
+                   @NonNull LocalDateTime startDateTime, @NonNull LocalDateTime endDateTime,
                    @NonNull List<String> emailList
     ) {
         this.id = id;
         this.topic = topic;
         this.place = place;
         this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
         this.emailList = emailList;
     }
 
-    public Meeting(@NonNull String topic, @NonNull String place, @NonNull LocalDateTime startDateTime, @NonNull List<String> emailList) {
-        this(meetingId++, topic, place, startDateTime, emailList);
-//        this.id = meetingId++;
-//        this.topic = topic;
-//        this.place = place;
-//        this.startDateTime = startDateTime;
-//        this.emailList = emailList;
+    public Meeting(@NonNull String topic, @NonNull String place,
+                   @NonNull LocalDateTime startDateTime, @NonNull LocalDateTime endDateTime,
+                   @NonNull List<String> emailList
+    ) {
+        this(meetingId++, topic, place, startDateTime, endDateTime, emailList);
     }
 
     // ---------- GETTER
@@ -63,6 +68,11 @@ public class Meeting {
     }
 
     @NonNull
+    public LocalDateTime getEndDateTime() {
+        return endDateTime;
+    }
+
+    @NonNull
     public List<String> getEmailList() {
         return emailList;
     }
@@ -75,21 +85,23 @@ public class Meeting {
         if (o == null || getClass() != o.getClass()) return false;
         Meeting meeting = (Meeting) o;
         return id == meeting.id &&
-                topic.equals(meeting.topic) &&
-                place.equals(meeting.place) &&
-                startDateTime.equals(meeting.startDateTime) &&
-                emailList.equals(meeting.emailList);
+            topic.equals(meeting.topic) &&
+            place.equals(meeting.place) &&
+            startDateTime.equals(meeting.startDateTime) &&
+            endDateTime.equals(meeting.endDateTime) &&
+            emailList.equals(meeting.emailList);
     }
 
     @NonNull
     @Override
     public String toString() {
         return "Meeting{" +
-                "id=" + id +
-                ", topic='" + topic + '\'' +
-                ", place='" + place + '\'' +
-                ", date=" + startDateTime +
-                ", memberList=" + emailList +
-                '}';
+            "id=" + id +
+            ", topic='" + topic + '\'' +
+            ", place='" + place + '\'' +
+            ", startDateTime=" + startDateTime +
+            ", endDateTime=" + endDateTime +
+            ", emailList=" + emailList +
+            '}';
     }
 }
