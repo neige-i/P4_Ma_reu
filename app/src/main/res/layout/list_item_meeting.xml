@@ -16,12 +16,12 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginStart="10dp"
-        tools:background="@color/colorPrimary"
+        tools:src="@mipmap/ic_logo_mario"
         android:contentDescription="@string/meeting_place"
         />
 
     <TextView
-        android:id="@+id/topic_and_place"
+        android:id="@+id/topic"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@+id/image"
@@ -33,16 +33,16 @@
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:textSize="20sp"
-        tools:text="Meeting A - Peach"
+        tools:text="Meeting A"
         />
 
     <TextView
         android:id="@+id/date_and_time"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@+id/topic_and_place"
-        app:layout_constraintEnd_toEndOf="@id/topic_and_place"
-        app:layout_constraintTop_toBottomOf="@id/topic_and_place"
+        app:layout_constraintStart_toStartOf="@+id/topic"
+        app:layout_constraintEnd_toEndOf="@id/topic"
+        app:layout_constraintTop_toBottomOf="@id/topic"
         app:layout_constraintBottom_toTopOf="@id/members"
         android:textColor="@android:color/black"
         tools:text="10/10/2020 14:00 - 15:00"
@@ -52,8 +52,8 @@
         android:id="@+id/members"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@id/topic_and_place"
-        app:layout_constraintEnd_toEndOf="@id/topic_and_place"
+        app:layout_constraintStart_toStartOf="@id/topic"
+        app:layout_constraintEnd_toEndOf="@id/topic"
         app:layout_constraintTop_toBottomOf="@id/date_and_time"
         app:layout_constraintBottom_toBottomOf="@id/image"
         android:textColor="@android:color/black"

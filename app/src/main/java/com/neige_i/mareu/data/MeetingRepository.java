@@ -12,7 +12,7 @@ public interface MeetingRepository {
     @NonNull
     LiveData<List<Meeting>> getAllMeetings();
 
-    void addMeeting(Meeting meeting);
+    void addMeeting(@NonNull Meeting meeting);
 
     void deleteMeeting(int meetingId);
 }

@@ -21,23 +21,17 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     }
 
     @Override
-    public void addMeeting(Meeting meetingToAdd) {
-        if (meetingList.getValue() != null) {
-            meetingList.getValue().add(meetingToAdd);
-            meetingList.setValue(meetingList.getValue());
-        }
+    public void addMeeting(@NonNull Meeting meetingToAdd) {
+        final List<Meeting> meetings = new ArrayList<>(meetingList.getValue());
+        meetings.add(meetingToAdd);
+        meetingList.setValue(meetings);
     }
 
     @Override
     public void deleteMeeting(int meetingId) {
-        if (meetingList.getValue() != null) {
-            for (Meeting meeting : meetingList.getValue()) {
-                if (meeting.getId() == meetingId) {
-                    meetingList.getValue().remove(meeting);
-                    break;
-                }
-            }
-            meetingList.setValue(meetingList.getValue());
-        }
+        final List<Meeting> meetings = new ArrayList<>(meetingList.getValue());
+        // ASKME: use lambda to filter collections in Java
+        meetings.removeIf(meeting -> meeting.getId() == meetingId);
+        meetingList.setValue(meetings);
     }
 }

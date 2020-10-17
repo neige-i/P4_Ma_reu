@@ -196,7 +196,6 @@ public class AddViewModel extends ViewModel {
      * Called when the user validates the start time or end time of the meeting.
      */
     public void onTimeChanged(int hour, int minute, @NonNull Context context) {
-        // ASKME: move code to method
         // Check if start time is strictly before end time (times can't be the same)
         final LocalTime selectedTime = LocalTime.of(hour, minute);
         final String errorMessage;
@@ -534,6 +533,7 @@ public class AddViewModel extends ViewModel {
 
                 if (placeError != null || timeMemberDuplicate) {
                     result = true;
+                    // TODO: builder
                     meetingUiLiveData.setValue(new MeetingUi(
                         meetingUi.getTopic(),
                         meetingUi.getDate(),

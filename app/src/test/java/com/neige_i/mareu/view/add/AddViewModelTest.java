@@ -354,8 +354,6 @@ public class AddViewModelTest {
         assertNull(meetingUi.getEndTimeError());
     }
 
-    // ASKME: never too many method
-
     @Test
     public void onTimeChanged_startBeforeEnd() {
         // Given: the start time input being clicked and a preset end time value
@@ -527,7 +525,7 @@ public class AddViewModelTest {
         // When: a member is added after the second element
         viewModel.onAddMember(1); // ID = 5
 
-        // ASKME: correct assertion
+        // FIXME: correct assertion, expected member and not index
         // Then: the member list contains the last added member (with ID 5) at the 3rd position
         final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
         assertEquals(5, meetingUi.getMemberList().size());
@@ -571,9 +569,10 @@ public class AddViewModelTest {
         viewModel.onRemoveMember(memberToRemove);
 
         // Then: the member list size has decreased and the available member list contains the removed member's email
+        // FIXME: assert expectedList
         final MeetingUi meetingUi = viewModel.getMeetingUiLiveData().getValue();
         assertEquals(2, meetingUi.getMemberList().size());
-        assertFalse(meetingUi.getMemberList().contains(memberToRemove)); // ASKME: both assertions useful
+        assertFalse(meetingUi.getMemberList().contains(memberToRemove));
         assertEquals(8, availableMembers.size());
         assertTrue(availableMembers.contains("maxime@lamzone.com"));
     }
