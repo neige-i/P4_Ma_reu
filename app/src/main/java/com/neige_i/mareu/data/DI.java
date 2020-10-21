@@ -16,7 +16,7 @@ public class DI {
     @NonNull
     private static final MeetingRepository repository = new MeetingRepositoryImpl();
     @NonNull
-    private static final List<String> availableMembers = new ArrayList<>(DummyGenerator.generateEmailAddresses());
+    private static final List<String> availableMembers = new ArrayList<>(DummyGenerator.EMAILS);
 
     // ---------- INJECTION METHOD
 
@@ -41,7 +41,7 @@ public class DI {
     public static MutableLiveData<MeetingUi> getMeetingUi() {
         // ASKME: allow logic here
         availableMembers.clear();
-        availableMembers.addAll(DummyGenerator.generateEmailAddresses());
+        availableMembers.addAll(DummyGenerator.EMAILS);
         return new MutableLiveData<>(new MeetingUi());
     }
 }

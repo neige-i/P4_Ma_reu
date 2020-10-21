@@ -43,6 +43,8 @@ public class MeetingUi {
     @NonNull
     private final List<MemberUi> memberList;
 
+    // ASKME: why not just using non-final variable with setters
+
     // ---------- CONSTRUCTOR
 
     public MeetingUi() {
@@ -150,5 +152,95 @@ public class MeetingUi {
             ", '" + placeError + '\'' +
             "], memberList=" + memberList.size() +
             '}';
+    }
+
+    public static class Builder {
+
+        private String topic;
+        private String date;
+        private String startTime;
+        private String endTime;
+        private String place;
+        private String topicError;
+        private String dateError;
+        private String startTimeError;
+        private String endTimeError;
+        private String placeError;
+        private List<MemberUi> memberList;
+
+        public Builder(@NonNull MeetingUi meetingUi) {
+            topic = meetingUi.topic;
+            date = meetingUi.date;
+            startTime = meetingUi.startTime;
+            endTime = meetingUi.endTime;
+            place = meetingUi.place;
+            topicError = meetingUi.topicError;
+            dateError = meetingUi.dateError;
+            startTimeError = meetingUi.startTimeError;
+            endTimeError = meetingUi.endTimeError;
+            placeError = meetingUi.placeError;
+            memberList = meetingUi.memberList;
+        }
+
+        public Builder setTopic(String topic) {
+            this.topic = topic;
+            return this;
+        }
+
+        public Builder setDate(String date) {
+            this.date = date;
+            return this;
+        }
+
+        public Builder setStartTime(String startTime) {
+            this.startTime = startTime;
+            return this;
+        }
+
+        public Builder setEndTime(String endTime) {
+            this.endTime = endTime;
+            return this;
+        }
+
+        public Builder setPlace(String place) {
+            this.place = place;
+            return this;
+        }
+
+        public Builder setTopicError(String topicError) {
+            this.topicError = topicError;
+            return this;
+        }
+
+        public Builder setDateError(String dateError) {
+            this.dateError = dateError;
+            return this;
+        }
+
+        public Builder setStartTimeError(String startTimeError) {
+            this.startTimeError = startTimeError;
+            return this;
+        }
+
+        public Builder setEndTimeError(String endTimeError) {
+            this.endTimeError = endTimeError;
+            return this;
+        }
+
+        public Builder setPlaceError(String placeError) {
+            this.placeError = placeError;
+            return this;
+        }
+
+        public Builder setMemberList(List<MemberUi> memberList) {
+            this.memberList = memberList;
+            return this;
+        }
+
+        public MeetingUi build() {
+            return new MeetingUi(topic, date, startTime, endTime, place, topicError, dateError,
+                                 startTimeError, endTimeError, placeError, memberList
+            );
+        }
     }
 }

@@ -1,34 +1,31 @@
 package com.neige_i.mareu.view.list;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.CheckedTextView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DummyGenerator;
 import com.neige_i.mareu.view.add.AddActivity;
-
-import java.util.List;
 
 public class ListFragment extends Fragment {
 
@@ -44,13 +41,14 @@ public class ListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true); // ASKME: leave this call here or move it to onViewCreated()
         return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        setHasOptionsMenu(true);
 
         viewModel = new ViewModelProvider(
             requireActivity(),
@@ -61,88 +59,47 @@ public class ListFragment extends Fragment {
         final MeetingAdapter adapter = configRecyclerView(viewModel);
         final TextView noMeetingTxt = requireView().findViewById(R.id.no_meeting);
         configFab(viewModel);
-        final AlertDialog filterDialog = initDialog();
-        final AutoCompleteTextView dateFilterInput = configDateFilter(viewModel);
-        final AutoCompleteTextView timeFilterInput = configTimeFilter(viewModel);
-        final AutoCompleteTextView placeFilterInput = configPlaceFilter(viewModel);
-        final AutoCompleteTextView memberFilterInput = configMemberFilter(viewModel);
 
-//        final MaterialButton button = requireView().findViewById(R.id.date_filter);
-//        button.setOnClickListener(v -> {
-////            View contentView = ((LayoutInflater) requireActivity().getApplicationContext()
-////                .getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-////                .inflate(R.layout.list_item_member, null);
-//            View contentView = LayoutInflater.from(requireContext()).inflate(R.layout.layout_spinner, null);
-//            Spinner spinner = contentView.findViewById(R.id.spinner);
-//            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
-//                requireContext(),
-//                android.R.layout.simple_list_item_1,
-//                DummyGenerator.generateEmailAddresses()
-//            );
-//            spinner.setAdapter(arrayAdapter);
-//            final PopupWindow popupWindow = new PopupWindow(
-//                contentView,
-//                ViewGroup.LayoutParams.WRAP_CONTENT,
-//                ViewGroup.LayoutParams.WRAP_CONTENT,
-//                true
-//            );
-//            popupWindow.showAsDropDown(v);
-////            registerForContextMenu(v);
-////            final PopupMenu popupMenu = new PopupMenu(requireContext(), v);
-////            popupMenu.getMenuInflater().inflate(R.menu.menu_list, popupMenu.getMenu());
-////            popupMenu.show();
-//        });
+        final TextInputEditText startDateInput = configStartDateInput(viewModel);
+        final TextInputEditText endDateInput = configEndDateInput(viewModel);
+        final TextInputEditText startTimeInput = configStartTimeInput(viewModel);
+        final TextInputEditText endTimeInput = configEndTimeInput(viewModel);
+        configStartDateLayout(viewModel);
+        configEndDateLayout(viewModel);
+        configStartTimeLayout(viewModel);
+        configEndTimeLayout(viewModel);
+        configPlace(viewModel);
+        configMember(viewModel);
+        final MotionLayout motionLayout = requireView().findViewById(R.id.motion_layout);
 
-        // Observe LiveData to update UI state
-        viewModel.getMeetings().observe(getViewLifecycleOwner(), adapter::submitList);
-        viewModel.getTextVisibilityState().observe(getViewLifecycleOwner(), noMeetingTxt::setVisibility);
-
-        // Observe LiveData to trigger UI events
-        viewModel.getDropDownVisibility().observe(getViewLifecycleOwner(), dropDownVisibility -> {
-            if (dropDownVisibility) {
-                placeFilterInput.showDropDown();
-            } else {
-                placeFilterInput.dismissDropDown();
-            }
+        viewModel.getListUi().observe(getViewLifecycleOwner(), listUi -> {
+            adapter.submitList(listUi.getMeetingList());
+            noMeetingTxt.setVisibility(listUi.getTextViewVisibility());
+            // FIXME: problem with TextView visibility
+            startDateInput.setText(listUi.getStartDate());
+            endDateInput.setText(listUi.getEndDate());
+            startTimeInput.setText(listUi.getStartTime());
+            endTimeInput.setText(listUi.getEndTime());
+            motionLayout.transitionToState(listUi.getDrawerState());
         });
-        viewModel.getShowDialogEvent().observe(getViewLifecycleOwner(), aVoid -> {
-            filterDialog.show();
-        });
+
+        showDatePicker(viewModel);
+        showTimePicker(viewModel);
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-
         inflater.inflate(R.menu.menu_filter, menu);
-    }
-
-    @Override
-    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
-                                    @Nullable ContextMenu.ContextMenuInfo menuInfo
-    ) {
-        requireActivity().getMenuInflater().inflate(R.menu.menu_filter, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.filter) {
-            Log.d("Neige", "ListFragment::onOptionsItemSelected: filter");
-//            viewModel.onFilterClicked();
+            viewModel.onFilterClicked();
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-        Log.d("Neige", "ListFragment::onContextItemSelected: filter");
-        if (item.getItemId() == R.id.filter) {
-            Log.d("Neige", "ListFragment::onContextItemSelected: filter");
-//            viewModel.onFilterClicked();
-            return true;
-        }
-        return super.onContextItemSelected(item);
     }
 
     // -------------------------------------- PRIVATE METHODS --------------------------------------
@@ -163,62 +120,92 @@ public class ListFragment extends Fragment {
         });
     }
 
-    @NonNull
-    private AlertDialog initDialog() {
-        return new AlertDialog.Builder(requireContext())
-            .setView(R.layout.dialog_fitler)
-            .setPositiveButton(R.string.ok_button, null)
-            .setNegativeButton(R.string.cancel_button, null)
-            .setNeutralButton(R.string.reset_button, null)
-            .create();
+    private TextInputEditText configStartDateInput(@NonNull ListViewModel viewModel) {
+        final TextInputEditText startDateInput = requireView().findViewById(R.id.start_date_filter_input);
+        startDateInput.setOnClickListener(v -> viewModel.onDateClicked(startDateInput.getId()));
+        return startDateInput;
     }
 
-    @NonNull
-    private AutoCompleteTextView configDateFilter(@NonNull ListViewModel viewModel) {
-        final AutoCompleteTextView dateFilterInput = requireView().findViewById(R.id.date_filter_input);
-        return dateFilterInput;
+    private void configStartDateLayout(@NonNull ListViewModel viewModel) {
+        final TextInputLayout startDateLayout = requireView().findViewById(R.id.start_date_filter_layout);
+        startDateLayout.setEndIconOnClickListener(v -> viewModel.onFieldCleared(startDateLayout.getId()));
     }
 
-    @NonNull
-    private AutoCompleteTextView configTimeFilter(@NonNull ListViewModel viewModel) {
-        final AutoCompleteTextView timeFilterInput = requireView().findViewById(R.id.time_filter_input);
-        return timeFilterInput;
+    private TextInputEditText configEndDateInput(@NonNull ListViewModel viewModel) {
+        final TextInputEditText endDateInput = requireView().findViewById(R.id.end_date_filter_input);
+        endDateInput.setOnClickListener(v -> viewModel.onDateClicked(endDateInput.getId()));
+        return endDateInput;
     }
 
-    @NonNull
-    private AutoCompleteTextView configPlaceFilter(@NonNull ListViewModel viewModel) {
-        final AutoCompleteTextView placeFilterInput = requireView().findViewById(R.id.place_filter_input);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
-            requireContext(),
-            android.R.layout.simple_list_item_multiple_choice,
-            DummyGenerator.generateMeetingPlaces()
+    private void configEndDateLayout(@NonNull ListViewModel viewModel) {
+        final TextInputLayout endDateLayout = requireView().findViewById(R.id.end_date_filter_layout);
+        endDateLayout.setEndIconOnClickListener(v -> viewModel.onFieldCleared(endDateLayout.getId()));
+    }
+
+    private TextInputEditText configStartTimeInput(@NonNull ListViewModel viewModel) {
+        final TextInputEditText startTimeInput = requireView().findViewById(R.id.start_time_filter_input);
+        startTimeInput.setOnClickListener(v -> viewModel.onTimeClicked(startTimeInput.getId()));
+        return startTimeInput;
+    }
+
+    private void configStartTimeLayout(@NonNull ListViewModel viewModel) {
+        final TextInputLayout startTimeLayout = requireView().findViewById(R.id.start_time_filter_layout);
+        startTimeLayout.setEndIconOnClickListener(v -> viewModel.onFieldCleared(startTimeLayout.getId()));
+    }
+
+    private TextInputEditText configEndTimeInput(@NonNull ListViewModel viewModel) {
+        final TextInputEditText endTimeInput = requireView().findViewById(R.id.end_time_filter_input);
+        endTimeInput.setOnClickListener(v -> viewModel.onTimeClicked(endTimeInput.getId()));
+        return endTimeInput;
+    }
+
+    private void configEndTimeLayout(@NonNull ListViewModel viewModel) {
+        final TextInputLayout endTimeLayout = requireView().findViewById(R.id.end_time_filter_layout);
+        endTimeLayout.setEndIconOnClickListener(v -> viewModel.onFieldCleared(endTimeLayout.getId()));
+    }
+
+    private void configPlace(@NonNull ListViewModel viewModel) {
+        final PlaceFilterAdapter placeFilterAdapter = new PlaceFilterAdapter(
+            DummyGenerator.CHECKABLE_LOGOS,
+            viewModel::onPlaceFilterChecked
         );
-        placeFilterInput.setAdapter(arrayAdapter);
-        placeFilterInput.setDropDownWidth(500); // TODO: better wrap_content than fixed
-        placeFilterInput.setOnItemClickListener((parent, view, position, id) -> {
-            final CheckedTextView checkedTextView = (CheckedTextView) view;
-            Log.d("Neige", "ListFragment::configPlaceFilter: " + checkedTextView.isChecked());
-            ((CheckedTextView) view).setChecked(true);
-            arrayAdapter.notifyDataSetChanged();
-            Log.d("Neige", "ListFragment::configPlaceFilter: " + checkedTextView.isChecked());
-        });
-        return placeFilterInput;
+        final RecyclerView placeList = requireView().findViewById(R.id.place_list);
+        placeList.setAdapter(placeFilterAdapter);
+        placeList.setLayoutManager(new GridLayoutManager(requireContext(), 4/*placeAdapter.getItemCount() / 2*/));
     }
 
-    @NonNull
-    private AutoCompleteTextView configMemberFilter(@NonNull ListViewModel viewModel) {
-        final List<String> names = DummyGenerator.generateEmailAddresses();
-        for (int i = 0; i < names.size(); i++) {
-            final String name = names.get(i);
-            names.set(i, name.substring(0, name.indexOf('@'))); // Keep only the name
-        }
-        final AutoCompleteTextView memberFilterInput = requireView().findViewById(R.id.member_filter_input);
-        memberFilterInput.setAdapter(new ArrayAdapter<>(
+    private void configMember(@NonNull ListViewModel viewModel) {
+        final MemberFilterAdapter memberFilterAdapter = new MemberFilterAdapter(
+            DummyGenerator.getNames(),
+            viewModel::onMemberFilterChecked
+        );
+        final RecyclerView memberList = requireView().findViewById(R.id.member_list);
+        memberList.setAdapter(memberFilterAdapter);
+//        memberList.setLayoutManager(new GridLayoutManager(requireContext(), memberAdapter.getItemCount() / 2));
+    }
+
+    private void showDatePicker(@NonNull ListViewModel viewModel) {
+        // Caution with month value range!
+        // LocalDate (java.time) returns a month between 1 and 12 whereas Calendar between 0 and 11
+        viewModel.getDatePicker().observe(getViewLifecycleOwner(), localDate -> {
+            new DatePickerDialog(
+                requireContext(),
+                (view1, year, month, dayOfMonth) -> viewModel.onDateChanged(year, month + 1, dayOfMonth),
+                localDate.getYear(),
+                localDate.getMonthValue() - 1,
+                localDate.getDayOfMonth()
+            ).show();
+        });
+    }
+
+    private void showTimePicker(@NonNull ListViewModel viewModel) {
+        viewModel.getTimePicker().observe(getViewLifecycleOwner(), localTime -> new TimePickerDialog(
             requireContext(),
-            android.R.layout.simple_list_item_multiple_choice,
-            names
-        ));
-        memberFilterInput.setDropDownWidth(500);
-        return memberFilterInput;
+            (view1, hourOfDay, minute) -> viewModel.onTimeChanged(hourOfDay, minute),
+            localTime.getHour(),
+            localTime.getMinute(),
+            true
+        ).show());
+        // ASKME: getTimePicker()
     }
 }

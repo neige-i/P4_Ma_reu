@@ -7,6 +7,8 @@
     <string name="topic">Topic</string>
     <string name="start_time">Start time</string>
     <string name="end_time">End time</string>
+    <string name="start_date">Start date</string>
+    <string name="end_date">End date</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
     <string name="place">Place</string>
@@ -26,4 +28,8 @@
     <string name="ok_button">OK</string>
     <string name="cancel_button">Cancel</string>
     <string name="reset_button">Reset</string>
+    <string name="fromDate">From date</string>
+    <string name="untilDate">Until date</string>
+    <string name="fromTime">From time</string>
+    <string name="untilTime">Until time</string>
 </resources>

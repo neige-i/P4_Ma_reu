@@ -13,7 +13,7 @@ public class ListViewModelFactory implements ViewModelProvider.Factory {
 
     public static ListViewModelFactory getInstance() {
         if (factory == null) {
-            synchronized (AddViewModelFactory.class) {
+            synchronized (ListViewModelFactory.class) {
                 if (factory == null)
                     factory = new ListViewModelFactory();
             }
@@ -29,7 +29,7 @@ public class ListViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(ListViewModel.class)) {
-            return (T) new ListViewModel(DI.getRepository());
+            return (T) new ListViewModel(DI.getRepository(), DI.getClock());
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

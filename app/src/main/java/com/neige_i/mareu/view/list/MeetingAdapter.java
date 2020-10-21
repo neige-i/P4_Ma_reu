@@ -63,8 +63,8 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
         }
 
         void bind(@NonNull Meeting meeting, @NonNull OnMeetingChangedListener onMeetingChangedListener) {
-            final int emailIndex = DummyGenerator.generateMeetingPlaces().indexOf(meeting.getPlace());
-            image.setImageResource(DummyGenerator.generatePlaceLogos().get(emailIndex));
+            final int placeIndex = DummyGenerator.PLACES.indexOf(meeting.getPlace());
+            image.setImageResource(DummyGenerator.LOGOS.get(placeIndex));
             topic.setText(meeting.getTopic());
             dateAndTime.setText(itemView.getResources().getString(
                 R.string.start_and_end_time,

@@ -141,7 +141,7 @@ public class AddFragment extends Fragment {
         placeInput.setAdapter(new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
-                DummyGenerator.generateMeetingPlaces()
+                DummyGenerator.PLACES
         ));
         placeInput.setOnItemClickListener((parent, view1, position, id) ->
                 viewModel.onPlaceChanged(parent.getItemAtPosition(position).toString()));
