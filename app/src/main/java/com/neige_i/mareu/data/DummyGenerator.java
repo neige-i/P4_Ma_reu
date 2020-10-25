@@ -117,7 +117,7 @@ public abstract class DummyGenerator {
             ),
             new Meeting(
                 "Meeting F",
-                PLACES.get(5),
+                PLACES.get(6),
                 startDateTime.plusDays(5).plusHours(5).plusMinutes(15),
                 endDateTime.plusDays(5).plusHours(7).plusMinutes(55),
                 EMAILS.subList(2, 6)

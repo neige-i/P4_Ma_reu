@@ -7,134 +7,111 @@ import android.view.View;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.mareu.R;
-import com.neige_i.mareu.data.DI;
 import com.neige_i.mareu.data.MeetingRepository;
 import com.neige_i.mareu.data.model.Meeting;
-import com.neige_i.mareu.view.add.model.MeetingUi;
-import com.neige_i.mareu.view.add.model.MemberUi;
 import com.neige_i.mareu.view.util.SingleLiveEvent;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.neige_i.mareu.view.util.Util.DATE_FORMAT;
 import static com.neige_i.mareu.view.util.Util.TIME_FORMAT;
 
-// FIXME: use final, @NonNull, @Nullable with method arguments
 public class AddViewModel extends ViewModel {
 
-    // ---------- CLASS VARIABLE
-
-    @NonNull
-    private static final String EMPTY_ERROR_MESSAGE = " ";
-
-    // ---------- STATE LIVE DATA
-
-//    @NonNull
-//    private final MutableLiveData<MeetingUi> meetingUiLiveData = DI.getMeetingUi();// = new MutableLiveData<>(new MeetingUi());
-
-    // ---------- EVENT LIVE DATA
-
-    @NonNull
-    private final SingleLiveEvent<LocalTime> timePicker = new SingleLiveEvent<>();
-    @NonNull
-    private final SingleLiveEvent<LocalDate> datePicker = new SingleLiveEvent<>();
-    @NonNull
-    private final SingleLiveEvent<String> showSnack = new SingleLiveEvent<>();
-    @NonNull
-    private final SingleLiveEvent<Void> endActivity = new SingleLiveEvent<>();
-
-    // ---------- LOCAL VARIABLE
+    // ------------------------------------  INSTANCE VARIABLES ------------------------------------
 
     @NonNull
     private final MeetingRepository meetingRepository;
     @NonNull
-    private final Clock clock;
+    private final Clock clock; // Handy for testing
+
+    // -------------------------------------  STATE LIVE DATA --------------------------------------
+
     @NonNull
-    private final MutableLiveData<MeetingUi> meetingUiLiveData;
+    private final MutableLiveData<MeetingUiModel> meetingUiModel = new MutableLiveData<>(new MeetingUiModel());
+
+    // -------------------------------------  EVENT LIVE DATA --------------------------------------
+
+    @NonNull
+    private final SingleLiveEvent<LocalTime> timePickerEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<LocalDate> datePickerEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<String> showSnackEvent = new SingleLiveEvent<>();
+    @NonNull
+    private final SingleLiveEvent<Void> endActivityEvent = new SingleLiveEvent<>();
+
+    // -------------------------------------  LOCAL VARIABLES --------------------------------------
+
+    @NonNull
+    private final String EMPTY_ERROR_MESSAGE = " ";
+
     private boolean isStartTime;
 
-    // ---------- CONSTRUCTOR
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
-    public AddViewModel(@NonNull MeetingRepository meetingRepository,
-                        @NonNull MutableLiveData<MeetingUi> meetingUiLiveData, @NonNull Clock clock) {
+    public AddViewModel(@NonNull MeetingRepository meetingRepository, @NonNull Clock clock) {
+        meetingRepository.resetAvailableMembers();
         this.meetingRepository = meetingRepository;
-        this.meetingUiLiveData = meetingUiLiveData;
         this.clock = clock;
     }
 
-    // ---------- LIVE DATA GETTER
-
     @NonNull
-    public LiveData<MeetingUi> getMeetingUiLiveData() {
-        return meetingUiLiveData;
+    public LiveData<MeetingUiModel> getMeetingUiModel() {
+        return meetingUiModel;
     }
 
     @NonNull
-    public LiveData<LocalTime> getTimePicker() {
-        return timePicker;
+    public LiveData<LocalTime> getTimePickerEvent() {
+        return timePickerEvent;
     }
 
     @NonNull
-    public LiveData<LocalDate> getDatePicker() {
-        return datePicker;
+    public LiveData<LocalDate> getDatePickerEvent() {
+        return datePickerEvent;
     }
 
     @NonNull
-    public LiveData<String> getShowSnack() {
-        return showSnack;
+    public LiveData<String> getShowSnackEvent() {
+        return showSnackEvent;
     }
 
     @NonNull
-    public LiveData<Void> getEndActivity() {
-        return endActivity;
+    public LiveData<Void> getEndActivityEvent() {
+        return endActivityEvent;
     }
 
-    // ---------- TOPIC METHOD
+    // --------------------------------------- TOPIC METHODS ---------------------------------------
 
     /**
      * Called when the user types the topic of the meeting.
      */
-    public void onTopicChanged(@NonNull String topic) {
-        final MeetingUi.Builder builder = new MeetingUi.Builder(meetingUiLiveData.getValue()) // Get current object
+    public void setTopic(@NonNull String topic) {
+        final MeetingUiModel.Builder builder = new MeetingUiModel.Builder(meetingUiModel.getValue()) // Get current object
             .setTopic(topic); // Change appropriate field
         if (!topic.trim().isEmpty())
             builder.setTopicError(null); // Change appropriate field
-        meetingUiLiveData.setValue(builder.build()); // Return modified object
-//        final MeetingUi meetingUi = meetingUiLiveData.getValue();
-//        meetingUiLiveData.setValue(new MeetingUi(
-//            topic, // Update topic value
-//            meetingUi.getDate(),
-//            meetingUi.getStartTime(),
-//            meetingUi.getEndTime(),
-//            meetingUi.getPlace(),
-//            // Remove topic error only if present and if the value is equivalent to an empty String
-//            meetingUi.getTopicError() != null && !topic.trim().isEmpty() ? null : meetingUi.getTopicError(),
-//            meetingUi.getDateError(),
-//            meetingUi.getStartTimeError(),
-//            meetingUi.getStartTimeError(),
-//            meetingUi.getPlaceError(),
-//            meetingUi.getMemberList()
-//        ));
+        meetingUiModel.setValue(builder.build()); // Return modified object
     }
 
-    // ---------- DATE METHOD
+    // --------------------------------------- DATE METHODS ----------------------------------------
 
     /**
      * Called when the user clicks to choose the date of the meeting.
      */
-    public void onDateClicked() {
-        datePicker.setValue(getLocalDate() == null ? LocalDate.now(clock) : getLocalDate());
+    public void showDatePickerDialog() {
+        datePickerEvent.setValue(getLocalDate() == null ? LocalDate.now(clock) : getLocalDate());
     }
 
     /**
@@ -142,48 +119,31 @@ public class AddViewModel extends ViewModel {
      */
     @Nullable
     private LocalDate getLocalDate() {
-        final String date = meetingUiLiveData.getValue().getDate();
+        final String date = meetingUiModel.getValue().getDate();
         return date.isEmpty() ? null : LocalDate.parse(date, DATE_FORMAT);
     }
 
     /**
      * Called when the user validates the date of the meeting.
      */
-    public void onDateChanged(int year, int month, int dayOfMonth) {
-        meetingUiLiveData.setValue(
-            new MeetingUi.Builder(meetingUiLiveData.getValue())
-                .setDate(LocalDate.of(year, month, dayOfMonth).format(DATE_FORMAT))
-                .setDateError(null)
-                .build()
+    public void setDate(int year, int month, int dayOfMonth) {
+        meetingUiModel.setValue(new MeetingUiModel.Builder(meetingUiModel.getValue())
+                                    .setDate(LocalDate.of(year, month, dayOfMonth).format(DATE_FORMAT))
+                                    .setDateError(null)
+                                    .build()
         );
-
-//        final MeetingUi meetingUi = meetingUiLiveData.getValue();
-//
-//        meetingUiLiveData.setValue(new MeetingUi(
-//            meetingUi.getTopic(),
-//            LocalDate.of(year, month, dayOfMonth).format(DATE_FORMAT), // Update date value
-//            meetingUi.getStartTime(),
-//            meetingUi.getEndTime(),
-//            meetingUi.getPlace(),
-//            meetingUi.getTopicError(),
-//            null, // Remove date error
-//            meetingUi.getStartTimeError(),
-//            meetingUi.getStartTimeError(),
-//            meetingUi.getPlaceError(),
-//            meetingUi.getMemberList()
-//        ));
     }
 
-    // ---------- TIME METHOD
+    // --------------------------------------- TIME METHODS ----------------------------------------
 
     /**
      * Called when the user clicks to choose the start time or end time of the meeting.
      */
-    public void onTimeClicked(@IdRes int timeInputId) {
+    public void showTimePickerDialog(@IdRes int timeInputId) {
         isStartTime = timeInputId == R.id.start_time_input;
 
         final LocalTime localTime = isStartTime ? getStartTime() : getEndTime();
-        timePicker.setValue(localTime == null ? LocalTime.now(clock) : localTime);
+        timePickerEvent.setValue(localTime == null ? LocalTime.now(clock) : localTime);
     }
 
     /**
@@ -191,7 +151,7 @@ public class AddViewModel extends ViewModel {
      */
     @Nullable
     private LocalTime getStartTime() {
-        final String startTime = meetingUiLiveData.getValue().getStartTime();
+        final String startTime = meetingUiModel.getValue().getStartTime();
         return startTime.isEmpty() ? null : LocalTime.parse(startTime, TIME_FORMAT);
     }
 
@@ -200,14 +160,15 @@ public class AddViewModel extends ViewModel {
      */
     @Nullable
     private LocalTime getEndTime() {
-        final String endTime = meetingUiLiveData.getValue().getEndTime();
+        final String endTime = meetingUiModel.getValue().getEndTime();
         return endTime.isEmpty() ? null : LocalTime.parse(endTime, TIME_FORMAT);
     }
 
     /**
      * Called when the user validates the start time or end time of the meeting.
      */
-    public void onTimeChanged(int hour, int minute, @NonNull Context context) {
+    // FIXME: application context
+    public void setTime(int hour, int minute, @NonNull Context context) {
         // Check if start time is strictly before end time (times can't be the same)
         final LocalTime selectedTime = LocalTime.of(hour, minute);
         final String errorMessage;
@@ -220,63 +181,28 @@ public class AddViewModel extends ViewModel {
         }
 
         final String stringTime = selectedTime.format(TIME_FORMAT);
-
-        final MeetingUi.Builder builder = new MeetingUi.Builder(meetingUiLiveData.getValue());
+        final MeetingUiModel.Builder builder = new MeetingUiModel.Builder(meetingUiModel.getValue());
         if (isStartTime)
             builder.setStartTime(stringTime).setStartTimeError(errorMessage);
         else
             builder.setEndTime(stringTime).setEndTimeError(errorMessage);
-        meetingUiLiveData.setValue(builder.build());
-
-//        final MeetingUi meetingUi = meetingUiLiveData.getValue();
-//        meetingUiLiveData.setValue(new MeetingUi(
-//            meetingUi.getTopic(),
-//            meetingUi.getDate(),
-//            // Update the appropriate time value that has been clicked
-//            isStartTime ? stringTime : meetingUi.getStartTime(),
-//            !isStartTime ? stringTime : meetingUi.getEndTime(),
-//            meetingUi.getPlace(),
-//            meetingUi.getTopicError(),
-//            meetingUi.getDateError(),
-//            // Update the appropriate time error
-//            isStartTime ? errorMessage : meetingUi.getStartTimeError(),
-//            !isStartTime ? errorMessage : meetingUi.getEndTimeError(),
-//            meetingUi.getPlaceError(),
-//            meetingUi.getMemberList()
-//        ));
+        meetingUiModel.setValue(builder.build());
     }
 
-    // ---------- PLACE METHOD
+    // --------------------------------------- PLACE METHODS ---------------------------------------
 
     /**
      * Called when the user selects the place of the meeting.
      */
-    public void onPlaceChanged(@NonNull String place) {
-        meetingUiLiveData.setValue(
-            new MeetingUi.Builder(meetingUiLiveData.getValue())
-                .setPlace(place)
-                .setPlaceError(null)
-                .build()
+    public void setPlace(@NonNull String place) {
+        meetingUiModel.setValue(new MeetingUiModel.Builder(meetingUiModel.getValue())
+                                    .setPlace(place)
+                                    .setPlaceError(null)
+                                    .build()
         );
-
-//        final MeetingUi meetingUi = meetingUiLiveData.getValue();
-//
-//        meetingUiLiveData.setValue(new MeetingUi(
-//            meetingUi.getTopic(),
-//            meetingUi.getDate(),
-//            meetingUi.getStartTime(),
-//            meetingUi.getEndTime(),
-//            place, // Update place value
-//            meetingUi.getTopicError(),
-//            meetingUi.getDateError(),
-//            meetingUi.getStartTimeError(),
-//            meetingUi.getStartTimeError(),
-//            null, // Remove place error
-//            meetingUi.getMemberList()
-//        ));
     }
 
-    // ---------- MEMBER LIST METHOD
+    // ------------------------------------ MEMBER LIST METHODS ------------------------------------
 
     // TODO: member cannot be at 2 meetings at the same time
     //  cannot add more member than available (hide positive button)
@@ -284,15 +210,15 @@ public class AddViewModel extends ViewModel {
     /**
      * Called when the user clicks on the 'plus' button to add a member to the meeting.
      */
-    public void onAddMember(int position) {
+    public void addMember(int position) {
         position++; // Add the member AFTER the current position (hence the incrementation)
 
         // Init new list with LiveData content
-        final List<MemberUi> newList = new ArrayList<>(meetingUiLiveData.getValue().getMemberList());
+        final List<MemberUiModel> newList = new ArrayList<>(meetingUiModel.getValue().getMemberList());
 
         // Apply appropriate changes
         changeFirstItemVisibility(newList);
-        newList.add(position, new MemberUi("", null, View.VISIBLE));
+        newList.add(position, new MemberUiModel("", null, View.VISIBLE));
 
         // Update LiveData with new value
         setMemberList(newList);
@@ -301,15 +227,15 @@ public class AddViewModel extends ViewModel {
     /**
      * Called when the user clicks on the 'minus' button to remove the member from the meeting.
      */
-    public void onRemoveMember(@NonNull MemberUi memberUi) {
+    public void removeMember(@NonNull MemberUiModel memberUiModel) {
         // Init new list with LiveData content
-        final List<MemberUi> newList = new ArrayList<>(meetingUiLiveData.getValue().getMemberList());
+        final List<MemberUiModel> newList = new ArrayList<>(meetingUiModel.getValue().getMemberList());
 
         // Update available member list
-        addAvailableMember(memberUi.getEmail());
+        addAvailableMember(memberUiModel.getEmail());
 
         // Apply appropriate changes
-        newList.remove(memberUi);
+        newList.remove(memberUiModel);
         changeFirstItemVisibility(newList);
 
         // Update LiveData with new value
@@ -319,17 +245,17 @@ public class AddViewModel extends ViewModel {
     /**
      * Called when the user replaces the member at the specified position in the list.
      */
-    public void onUpdateMember(int position, @NonNull String email) {
+    public void updateMember(int position, @NonNull String email) {
         // Init new list with LiveData content
-        final List<MemberUi> newList = new ArrayList<>(meetingUiLiveData.getValue().getMemberList());
-        final MemberUi oldMember = newList.get(position);
+        final List<MemberUiModel> newList = new ArrayList<>(meetingUiModel.getValue().getMemberList());
+        final MemberUiModel oldMember = newList.get(position);
 
         // Update available member list
         addAvailableMember(oldMember.getEmail());
         removeAvailableMember(email);
 
         // Apply appropriate changes
-        newList.set(position, new MemberUi(
+        newList.set(position, new MemberUiModel(
             oldMember.getId(),
             email,
             null,
@@ -343,13 +269,13 @@ public class AddViewModel extends ViewModel {
     /**
      * Toggles the visibility of the 'minus' button of the first member of the specified list.
      */
-    private void changeFirstItemVisibility(@NonNull final List<MemberUi> memberList) {
+    private void changeFirstItemVisibility(@NonNull final List<MemberUiModel> memberList) {
         if (memberList.size() == 1) {
             // Get first element
-            final MemberUi firstMember = memberList.get(0);
+            final MemberUiModel firstMember = memberList.get(0);
 
             // Toggle first member's button visibility between VISIBLE and INVISIBLE
-            memberList.set(0, new MemberUi(
+            memberList.set(0, new MemberUiModel(
                 firstMember.getId(),
                 firstMember.getEmail(),
                 firstMember.getEmailError(),
@@ -363,25 +289,8 @@ public class AddViewModel extends ViewModel {
      */
     private void addAvailableMember(@NonNull String memberEmail) {
         if (!memberEmail.isEmpty()) {
-            DI.getAvailableMembers().add(memberEmail);
-
-            final MeetingUi meetingUi = meetingUiLiveData.getValue();
-
             // TODO: put the member at its original position in the list
-//            meetingUi.getAvailableMembers().add(memberEmail);
-            meetingUiLiveData.setValue(new MeetingUi(
-                meetingUi.getTopic(),
-                meetingUi.getDate(),
-                meetingUi.getStartTime(),
-                meetingUi.getEndTime(),
-                meetingUi.getPlace(),
-                meetingUi.getTopicError(),
-                meetingUi.getDateError(),
-                meetingUi.getStartTimeError(),
-                meetingUi.getStartTimeError(),
-                meetingUi.getPlaceError(),
-                meetingUi.getMemberList()
-            ));
+            meetingRepository.addAvailableMembers(memberEmail);
         }
     }
 
@@ -389,151 +298,115 @@ public class AddViewModel extends ViewModel {
      * Removes the specified email address from the available ones for the meeting.
      */
     private void removeAvailableMember(@NonNull String memberEmail) {
-        DI.getAvailableMembers().remove(memberEmail);
-        final MeetingUi meetingUi = meetingUiLiveData.getValue();
-
-//        meetingUi.getAvailableMembers().remove(memberEmail);
-        meetingUiLiveData.setValue(new MeetingUi(
-            meetingUi.getTopic(),
-            meetingUi.getDate(),
-            meetingUi.getStartTime(),
-            meetingUi.getEndTime(),
-            meetingUi.getPlace(),
-            meetingUi.getTopicError(),
-            meetingUi.getDateError(),
-            meetingUi.getStartTimeError(),
-            meetingUi.getStartTimeError(),
-            meetingUi.getPlaceError(),
-            meetingUi.getMemberList()
-        ));
+        meetingRepository.removeAvailableMembers(memberEmail);
     }
 
     /**
      * Updates the member list of the meeting.
      */
-    private void setMemberList(@NonNull List<MemberUi> memberList) {
-        meetingUiLiveData.setValue(
-            new MeetingUi.Builder(meetingUiLiveData.getValue())
-                .setMemberList(memberList)
-                .build()
+    private void setMemberList(@NonNull List<MemberUiModel> memberList) {
+        meetingUiModel.setValue(new MeetingUiModel.Builder(meetingUiModel.getValue())
+                                    .setMemberList(memberList)
+                                    .build()
         );
-
-//        final MeetingUi meetingUi = meetingUiLiveData.getValue();
-//
-//        meetingUiLiveData.setValue(new MeetingUi(
-//            meetingUi.getTopic(),
-//            meetingUi.getDate(),
-//            meetingUi.getStartTime(),
-//            meetingUi.getEndTime(),
-//            meetingUi.getPlace(),
-//            meetingUi.getTopicError(),
-//            meetingUi.getDateError(),
-//            meetingUi.getStartTimeError(),
-//            meetingUi.getStartTimeError(),
-//            meetingUi.getPlaceError(),
-//            memberList
-//        ));
     }
 
-    // ---------- ADD BUTTON METHOD
+    // ---------------------------------------- FAB METHODS ----------------------------------------
 
     /**
      * Called when the user clicks on the 'add' button.
      */
     public void onAddMeeting(@NonNull Context context) {
-        setErrorMessages();
-        if (containsError())
-            showSnack.setValue(context.getString(R.string.mandatory_fields));
+        if (setErrorMessages())
+            showSnackEvent.setValue(context.getString(R.string.mandatory_fields));
         else if (doesMeetingExist(context)) // TODO: remove snack and make doesMeetingExist() returns void
-            showSnack.setValue(context.getString(R.string.meeting_already_exist));
-        else if (meetingUiLiveData.getValue() != null) {
+            showSnackEvent.setValue(context.getString(R.string.meeting_already_exist));
+        else if (meetingUiModel.getValue() != null) {
             final List<String> emailList = new ArrayList<>();
-            for (MemberUi member : meetingUiLiveData.getValue().getMemberList()) {
+            for (MemberUiModel member : meetingUiModel.getValue().getMemberList()) {
                 emailList.add(member.getEmail());
             }
             meetingRepository.addMeeting(new Meeting(
-                meetingUiLiveData.getValue().getTopic(),
-                meetingUiLiveData.getValue().getPlace(),
-                getDateTimeTruncated(getStartTime()),
-                getDateTimeTruncated(getEndTime()),
+                meetingUiModel.getValue().getTopic(),
+                meetingUiModel.getValue().getPlace(),
+                getLocalDate().atTime(getStartTime()),
+                getLocalDate().atTime(getEndTime()),
                 emailList
             ));
-            endActivity.call();
+            endActivityEvent.call();
         }
     }
 
     /**
-     * Checks if fields are corrects and updates errors accordingly.
+     * Checks if fields are corrects and updates errors accordingly.<br />
+     * Returns true if there is at least 1 error, false otherwise.
      */
-    private void setErrorMessages() {
-        final MeetingUi meetingUi = meetingUiLiveData.getValue();
+    private boolean setErrorMessages() {
+        boolean containsError = false;
+        final MeetingUiModel meetingUiModel = this.meetingUiModel.getValue();
 
-        final List<MemberUi> newList = new ArrayList<>(meetingUi.getMemberList());
-        for (MemberUi memberUi : newList) {
-            if (memberUi.getEmail().isEmpty()) {
-                newList.set(newList.indexOf(memberUi), new MemberUi(
-                    memberUi.getId(),
-                    memberUi.getEmail(),
+        final List<MemberUiModel> newList = new ArrayList<>(meetingUiModel.getMemberList());
+        for (MemberUiModel memberUiModel : newList) {
+            if (memberUiModel.getEmail().isEmpty()) {
+                containsError = true;
+                newList.set(newList.indexOf(memberUiModel), new MemberUiModel(
+                    memberUiModel.getId(),
+                    memberUiModel.getEmail(),
                     EMPTY_ERROR_MESSAGE, // Update member error if email value is an empty String
-                    memberUi.getRemoveButtonVisibility()
+                    memberUiModel.getRemoveButtonVisibility()
                 ));
             }
         }
-        meetingUiLiveData.setValue(new MeetingUi(
-            meetingUi.getTopic(),
-            meetingUi.getDate(),
-            meetingUi.getStartTime(),
-            meetingUi.getEndTime(),
-            meetingUi.getPlace(),
-            // Update errors if corresponding values are empty Strings
-            meetingUi.getTopic().trim().isEmpty() ? EMPTY_ERROR_MESSAGE : meetingUi.getTopicError(),
-            meetingUi.getDate().isEmpty() ? EMPTY_ERROR_MESSAGE : meetingUi.getDateError(),
-            meetingUi.getStartTime().isEmpty() ? EMPTY_ERROR_MESSAGE : meetingUi.getStartTimeError(),
-            meetingUi.getEndTime().isEmpty() ? EMPTY_ERROR_MESSAGE : meetingUi.getEndTimeError(),
-            meetingUi.getPlace().isEmpty() ? EMPTY_ERROR_MESSAGE : meetingUi.getPlaceError(),
-            newList
-        ));
-    }
+        final MeetingUiModel.Builder builder = new MeetingUiModel.Builder(meetingUiModel).setMemberList(newList);
+        if (meetingUiModel.getTopic().trim().isEmpty()) {
+            containsError = true;
+            builder.setTopicError(EMPTY_ERROR_MESSAGE);
+        }
+        if (meetingUiModel.getDate().isEmpty()) {
+            containsError = true;
+            builder.setDateError(EMPTY_ERROR_MESSAGE);
+        }
+        if (meetingUiModel.getStartTime().isEmpty()) {
+            containsError = true;
+            builder.setStartTimeError(EMPTY_ERROR_MESSAGE);
+        }
+        if (meetingUiModel.getEndTime().isEmpty()) {
+            containsError = true;
+            builder.setEndTimeError(EMPTY_ERROR_MESSAGE);
+        }
+        if (meetingUiModel.getPlace().isEmpty()) {
+            containsError = true;
+            builder.setPlaceError(EMPTY_ERROR_MESSAGE);
+        }
+        this.meetingUiModel.setValue(builder.build());
 
-    /**
-     * Returns true if there is at least 1 error, false otherwise.
-     */
-    private boolean containsError() {
-        final MeetingUi meetingUi = meetingUiLiveData.getValue();
-
-        boolean listError = false;
-        for (MemberUi memberUi : meetingUi.getMemberList())
-            if (memberUi.getEmailError() != null) {
-                listError = true;
-                break;
-            }
-        return meetingUi.getTopicError() != null || meetingUi.getDateError() != null ||
-            meetingUi.getStartTimeError() != null || meetingUi.getEndTimeError() != null ||
-            meetingUi.getPlaceError() != null || listError;
+        return containsError;
     }
 
     /**
      * Checks if repository contains another meeting with the same time, date and place
      */
     private boolean doesMeetingExist(@NonNull Context context) { // TODO: change name
-        final MeetingUi meetingUi = meetingUiLiveData.getValue();
+        final MeetingUiModel meetingUiModel = this.meetingUiModel.getValue();
 
         boolean result = false;
 
         for (Meeting oldMeeting : meetingRepository.getAllMeetings().getValue()) {
             final LocalDateTime oldStart = oldMeeting.getStartDateTime();
             final LocalDateTime oldEnd = oldMeeting.getEndDateTime();
-            final LocalDateTime newStart = getDateTimeTruncated(getStartTime());
-            final LocalDateTime newEnd = getDateTimeTruncated(getEndTime());
+            final LocalDateTime newStart = getLocalDate().atTime(getStartTime());
+            final LocalDateTime newEnd = getLocalDate().atTime(getEndTime());
             // Only conditions where this meeting doesn't overlap an existing one
-            if ((!newStart.isAfter(oldStart) && newEnd.isAfter(oldStart)) ||
-                (!newEnd.isBefore(oldEnd) && newStart.isBefore(oldEnd))) {
+            Log.d("Neige", "AddViewModel::doesMeetingExist: " + newStart.isBefore(oldStart) + " " +
+                newEnd.isAfter(oldStart) + " " + newStart.isAfter(oldStart) + " " + newStart.isBefore(oldEnd));
+            if ((newStart.isBefore(oldStart) && newEnd.isAfter(oldStart)) || newStart.isEqual(oldStart) ||
+                (newStart.isAfter(oldStart) && newStart.isBefore(oldEnd))) {
 
                 Log.d("Neige", "AddViewModel::doesMeetingExist: overlap meeting with");
 
                 String placeError = null;
-                if (meetingUi.getPlace().equals(oldMeeting.getPlace())) {
-                    Log.d("Neige", "AddViewModel::doesMeetingExist: " + meetingUi.getPlace() + " already taken");
+                if (meetingUiModel.getPlace().equals(oldMeeting.getPlace())) {
+                    Log.d("Neige", "AddViewModel::doesMeetingExist: " + meetingUiModel.getPlace() + " already taken");
                     // TODO: there already is a meeting this time and place
                     placeError = context.getString(
                         R.string.time_place_error,
@@ -543,15 +416,15 @@ public class AddViewModel extends ViewModel {
                 }
 
                 boolean timeMemberDuplicate = false;
-                final List<MemberUi> newList = new ArrayList<>(meetingUi.getMemberList());
-                for (MemberUi memberUi : newList) {
-                    final String email = memberUi.getEmail();
+                final List<MemberUiModel> newList = new ArrayList<>(meetingUiModel.getMemberList());
+                for (MemberUiModel memberUiModel : newList) {
+                    final String email = memberUiModel.getEmail();
                     if (oldMeeting.getEmailList().contains(email)) {
                         Log.d("Neige", "AddViewModel::doesMeetingExist: " + email + " is busy");
                         timeMemberDuplicate = true;
                         // TODO: this member is already in a meeting at this time
-                        newList.set(newList.indexOf(memberUi), new MemberUi(
-                            memberUi.getId(),
+                        newList.set(newList.indexOf(memberUiModel), new MemberUiModel(
+                            memberUiModel.getId(),
                             email,
                             context.getString(
                                 R.string.time_member_error,
@@ -559,7 +432,7 @@ public class AddViewModel extends ViewModel {
                                 oldStart.toLocalTime().toString(),
                                 oldEnd.toLocalTime().toString()
                             ),
-                            memberUi.getRemoveButtonVisibility()
+                            memberUiModel.getRemoveButtonVisibility()
                         ));
                     }
                 }
@@ -567,34 +440,19 @@ public class AddViewModel extends ViewModel {
                 if (placeError != null || timeMemberDuplicate) {
                     result = true;
                     // TODO: builder
-                    meetingUiLiveData.setValue(new MeetingUi(
-                        meetingUi.getTopic(),
-                        meetingUi.getDate(),
-                        meetingUi.getStartTime(),
-                        meetingUi.getEndTime(),
-                        meetingUi.getPlace(),
-                        meetingUi.getTopicError(),
-                        // Update date, time, place and member list errors
-                        EMPTY_ERROR_MESSAGE,
-                        EMPTY_ERROR_MESSAGE,
-                        EMPTY_ERROR_MESSAGE,
-                        placeError != null ? placeError : meetingUi.getPlaceError(),
-                        timeMemberDuplicate ? newList : meetingUi.getMemberList()
-                    ));
+                    final MeetingUiModel.Builder builder = new MeetingUiModel.Builder(meetingUiModel)
+                        .setDateError(EMPTY_ERROR_MESSAGE)
+                        .setStartTimeError(EMPTY_ERROR_MESSAGE)
+                        .setEndTimeError(EMPTY_ERROR_MESSAGE);
+                    if (placeError != null)
+                        builder.setPlaceError(placeError);
+                    if (timeMemberDuplicate)
+                        builder.setMemberList(newList);
+                    this.meetingUiModel.setValue(builder.build());
                     break;
                 }
             }
         }
         return result;
     }
-
-    @Nullable
-    private LocalDateTime getDateTimeTruncated(LocalTime localTime) {
-        if (getLocalDate() == null || localTime == null) {
-            return null;
-        } else {
-            return LocalDateTime.of(getLocalDate(), localTime).truncatedTo(ChronoUnit.MINUTES); // TODO: truncatedTo() might be unnecessary
-        }
-    }
 }
-// ASKME: class too long

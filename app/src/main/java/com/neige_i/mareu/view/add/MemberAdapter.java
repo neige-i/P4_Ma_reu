@@ -16,9 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DI;
-import com.neige_i.mareu.view.add.model.MemberUi;
 
-public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberViewHolder> {
+public class MemberAdapter extends ListAdapter<MemberUiModel, MemberAdapter.MemberViewHolder> {
 
     @NonNull
     private final OnMemberChangedListener onMemberChangedListener;
@@ -57,7 +56,7 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
             email.setAdapter(new ArrayAdapter<>(
                 itemView.getContext(),
                 android.R.layout.simple_list_item_1,
-                DI.getAvailableMembers()
+                DI.getRepository().getAvailableMembers()
             ));
             email.setOnItemClickListener((parent, view, position, id) ->
                     onMemberChangedListener.onEmailChosen(getAdapterPosition(), parent.getItemAtPosition(position).toString()));
@@ -71,31 +70,32 @@ public class MemberAdapter extends ListAdapter<MemberUi, MemberAdapter.MemberVie
                     onMemberChangedListener.onAddMember(getAdapterPosition()));
         }
 
-        void bind(@NonNull MemberUi memberUi, @NonNull OnMemberChangedListener onMemberChangedListener) {
-            Log.d("Nino", "bind() called with: memberUi = [" + memberUi + "]");
-            email.setText(memberUi.getEmail(), false);
-            emailLayout.setError(memberUi.getEmailError());
-            removeButton.setVisibility(memberUi.getRemoveButtonVisibility());
-            removeButton.setOnClickListener(v -> onMemberChangedListener.onRemoveMember(memberUi));
+        void bind(@NonNull MemberUiModel memberUiModel, @NonNull OnMemberChangedListener onMemberChangedListener) {
+            Log.d("Nino", "bind() called with: memberUi = [" + memberUiModel + "]");
+            email.setText(memberUiModel.getEmail(), false);
+            emailLayout.setError(memberUiModel.getEmailError());
+            removeButton.setVisibility(memberUiModel.getRemoveButtonVisibility());
+            removeButton.setOnClickListener(v -> onMemberChangedListener.onRemoveMember(
+                memberUiModel));
         }
     }
 
-    private static class MemberDiffCallback extends DiffUtil.ItemCallback<MemberUi> {
+    private static class MemberDiffCallback extends DiffUtil.ItemCallback<MemberUiModel> {
 
         @Override
-        public boolean areItemsTheSame(@NonNull MemberUi oldItem, @NonNull MemberUi newItem) {
+        public boolean areItemsTheSame(@NonNull MemberUiModel oldItem, @NonNull MemberUiModel newItem) {
             return oldItem.getId() == newItem.getId();
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull MemberUi oldItem, @NonNull MemberUi newItem) {
+        public boolean areContentsTheSame(@NonNull MemberUiModel oldItem, @NonNull MemberUiModel newItem) {
             return oldItem.equals(newItem);
         }
     }
 
     interface OnMemberChangedListener {
         void onAddMember(int position);
-        void onRemoveMember(@NonNull MemberUi memberUi);
+        void onRemoveMember(@NonNull MemberUiModel memberUiModel);
         void onEmailChosen(int position, @NonNull String email);
     }
 }

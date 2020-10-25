@@ -1,6 +1,7 @@
 package com.neige_i.mareu.data.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -9,12 +10,22 @@ import java.util.List;
 
 public class Filters {
 
+    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
+
+    @Nullable
     private final LocalDate fromDate;
+    @Nullable
     private final LocalDate untilDate;
+    @Nullable
     private final LocalTime fromTime;
+    @Nullable
     private final LocalTime untilTime;
+    @NonNull
     private final List<String> places;
+    @NonNull
     private final List<String> members;
+
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
     public Filters() {
         fromDate = null;
@@ -25,10 +36,9 @@ public class Filters {
         members = new ArrayList<>();
     }
 
-    public Filters(LocalDate fromDate, LocalDate untilDate, LocalTime fromTime,
-                   LocalTime untilTime,
-                   List<String> places,
-                   List<String> members
+    public Filters(@Nullable LocalDate fromDate, @Nullable LocalDate untilDate,
+                   @Nullable LocalTime fromTime, @Nullable LocalTime untilTime,
+                   @NonNull List<String> places, @NonNull List<String> members
     ) {
         this.fromDate = fromDate;
         this.untilDate = untilDate;
@@ -38,37 +48,51 @@ public class Filters {
         this.members = members;
     }
 
+    @Nullable
     public LocalDate getFromDate() {
         return fromDate;
     }
 
+    @Nullable
     public LocalDate getUntilDate() {
         return untilDate;
     }
 
+    @Nullable
     public LocalTime getFromTime() {
         return fromTime;
     }
 
+    @Nullable
     public LocalTime getUntilTime() {
         return untilTime;
     }
 
+    @NonNull
     public List<String> getPlaces() {
         return places;
     }
 
+    @NonNull
     public List<String> getMembers() {
         return members;
     }
 
+    // --------------------------------------- BUILDER CLASS ---------------------------------------
+
     public static class Builder {
 
+        @Nullable
         private LocalDate fromDate;
+        @Nullable
         private LocalDate untilDate;
+        @Nullable
         private LocalTime fromTime;
+        @Nullable
         private LocalTime untilTime;
+        @NonNull
         private List<String> places;
+        @NonNull
         private List<String> members;
 
         public Builder(@NonNull Filters filters) {

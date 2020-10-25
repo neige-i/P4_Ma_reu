@@ -1,44 +1,42 @@
 package com.neige_i.mareu.data;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Transformations;
 
-import com.neige_i.mareu.data.model.Filters;
 import com.neige_i.mareu.data.model.Meeting;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public interface MeetingRepository {
 
-    // ---------- MEETING LIST
+    // -------------------------------------- GENERAL METHODS --------------------------------------
+
+    @NonNull
+    LiveData<List<Meeting>> getFilteredList();
+
+    // ----------------------------------- MEETING LIST METHODS ------------------------------------
 
     @NonNull
     LiveData<List<Meeting>> getAllMeetings();
 
     void addMeeting(@NonNull Meeting meetingToAdd);
 
-    void addMeetingList(@NonNull List<Meeting> meetingsToAdd);
+    void addDummyList(@NonNull List<Meeting> meetingsToAdd);
 
     void deleteMeeting(int meetingId);
 
-    @NonNull
-    LiveData<List<Meeting>> getFilteredList();
+    // -------------------------------------- FILTER METHODS ---------------------------------------
 
-    // ---------- FILTERS
+    void setFrom(@Nullable LocalDate fromDate);
 
-    void setFrom(@NonNull LocalDate fromDate);
+    void setUntil(@Nullable LocalDate untilDate);
 
-    void setUntil(@NonNull LocalDate untilDate);
+    void setFrom(@Nullable LocalTime fromTime);
 
-    void setFrom(@NonNull LocalTime fromTime);
-
-    void setUntil(@NonNull LocalTime untilTime);
+    void setUntil(@Nullable LocalTime untilTime);
 
     void addPlace(@NonNull String place);
 
@@ -48,5 +46,14 @@ public interface MeetingRepository {
 
     void removeMember(@NonNull String member);
 
-    void reset();
+    // --------------------------------- AVAILABLE MEMBERS METHODS ---------------------------------
+
+    @NonNull
+    List<String> getAvailableMembers();
+
+    void addAvailableMembers(@NonNull String memberEmail);
+
+    void removeAvailableMembers(@NonNull String memberEmail);
+
+    void resetAvailableMembers();
 }

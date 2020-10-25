@@ -1,4 +1,4 @@
-package com.neige_i.mareu.view.add.model;
+package com.neige_i.mareu.view.add;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * Model UI for {@link com.neige_i.mareu.R.layout#list_item_meeting list_item_meeting} layout.
  */
-public class MemberUi {
+public class MemberUiModel {
 
     // ---------- CLASS VARIABLE
 
@@ -28,14 +28,14 @@ public class MemberUi {
     /**
      * Initializes a Member with a new id.
      */
-    public MemberUi(@NonNull String email, @Nullable String emailError, int removeButtonVisibility) {
+    public MemberUiModel(@NonNull String email, @Nullable String emailError, int removeButtonVisibility) {
         this(memberId++, email, emailError, removeButtonVisibility);
     }
 
     /**
      * Constructor used to set members' properties.
      */
-    public MemberUi(int id, @NonNull String email, @Nullable String emailError, int removeButtonVisibility) {
+    public MemberUiModel(int id, @NonNull String email, @Nullable String emailError, int removeButtonVisibility) {
         this.id = id;
         this.email = email;
         this.emailError = emailError;
@@ -68,11 +68,11 @@ public class MemberUi {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MemberUi memberUi = (MemberUi) o;
-        return id == memberUi.id &&
-            removeButtonVisibility == memberUi.removeButtonVisibility &&
-            Objects.equals(email, memberUi.email) &&
-            Objects.equals(emailError, memberUi.emailError);
+        MemberUiModel memberUiModel = (MemberUiModel) o;
+        return id == memberUiModel.id &&
+            removeButtonVisibility == memberUiModel.removeButtonVisibility &&
+            Objects.equals(email, memberUiModel.email) &&
+            Objects.equals(emailError, memberUiModel.emailError);
     }
 
     @NonNull

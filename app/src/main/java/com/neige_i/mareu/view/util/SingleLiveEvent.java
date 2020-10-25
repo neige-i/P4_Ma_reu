@@ -23,9 +23,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class SingleLiveEvent<T> extends MutableLiveData<T> {
 
+    // -------------------------------------- CLASS VARIABLES --------------------------------------
+
     private static final String TAG = "SingleLiveEvent";
 
-    private final AtomicBoolean mPending = new AtomicBoolean(false);
+    // -------------------------------------- LOCAL VARIABLES --------------------------------------
+
+    private final AtomicBoolean pending = new AtomicBoolean(false);
+
+    // ------------------------------------ MAIN THREAD METHODS ------------------------------------
 
     @MainThread
     @Override
@@ -37,7 +43,7 @@ public class SingleLiveEvent<T> extends MutableLiveData<T> {
 
         // Observe the internal MutableLiveData
         super.observe(owner, t -> {
-            if (mPending.compareAndSet(true, false)) {
+            if (pending.compareAndSet(true, false)) {
                 observer.onChanged(t);
             }
         });
@@ -46,7 +52,7 @@ public class SingleLiveEvent<T> extends MutableLiveData<T> {
     @MainThread
     @Override
     public void setValue(@Nullable T t) {
-        mPending.set(true);
+        pending.set(true);
         super.setValue(t);
     }
 

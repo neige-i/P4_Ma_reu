@@ -21,9 +21,7 @@ public class MemberFilterAdapter extends RecyclerView.Adapter<MemberFilterAdapte
     @NonNull
     private final OnMemberFilterCheckedListener listener;
 
-    public MemberFilterAdapter(@NonNull List<String> nameList,
-                               @NonNull OnMemberFilterCheckedListener listener
-    ) {
+    public MemberFilterAdapter(@NonNull List<String> nameList, @NonNull OnMemberFilterCheckedListener listener) {
         this.nameList = nameList;
         this.listener = listener;
     }

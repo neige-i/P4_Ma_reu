@@ -22,23 +22,26 @@ import static com.neige_i.mareu.view.util.Util.TIME_FORMAT;
 
 public class ListViewModel extends ViewModel {
 
-    // ----------------------------------------- VARIABLES -----------------------------------------
+    // ------------------------------------  INSTANCE VARIABLES ------------------------------------
 
-    // ---------- INSTANCE VARIABLE
     @NonNull
     private final MeetingRepository meetingRepository;
-    // ---------- STATE LIVE DATA
+    @NonNull
+    private final Clock clock; // Handy for testing
+
+    // -------------------------------------  STATE LIVE DATA --------------------------------------
 
     @NonNull
-    private final MutableLiveData<ListUi> listUi = new MutableLiveData<>(new ListUi());
+    private final MutableLiveData<ListUiModel> listUiModel = new MutableLiveData<>(new ListUiModel());
+
+    // -------------------------------------  EVENT LIVE DATA --------------------------------------
 
     @NonNull
-    private final SingleLiveEvent<LocalDate> datePicker = new SingleLiveEvent<>();
+    private final SingleLiveEvent<LocalDate> datePickerEvent = new SingleLiveEvent<>();
     @NonNull
-    private final SingleLiveEvent<LocalTime> timePicker = new SingleLiveEvent<>();
+    private final SingleLiveEvent<LocalTime> timePickerEvent = new SingleLiveEvent<>();
 
-    @NonNull
-    private final Clock clock;
+    // -------------------------------------  LOCAL VARIABLES --------------------------------------
 
     private boolean isStartDate;
     private boolean isStartTime;
@@ -50,77 +53,73 @@ public class ListViewModel extends ViewModel {
         this.clock = clock;
     }
 
-    public LiveData<ListUi> getListUi() {
+    public LiveData<ListUiModel> getListUiModel() {
         return Transformations.switchMap(
             meetingRepository.getFilteredList(),
             meetingList -> Transformations.map(
-                listUi,
-                ui -> new ListUi.Builder(listUi.getValue())
-                    .setMeetingList(meetingList)
-                    .build()
+                listUiModel,
+                ui -> new ListUiModel.Builder(ui).setMeetingList(meetingList).build()
             )
         );
     }
 
     @NonNull
-    public LiveData<LocalDate> getDatePicker() {
-        return datePicker;
+    public LiveData<LocalDate> getDatePickerEvent() {
+        return datePickerEvent;
     }
 
     @NonNull
-    public LiveData<LocalTime> getTimePicker() {
-        return timePicker;
+    public LiveData<LocalTime> getTimePickerEvent() {
+        return timePickerEvent;
     }
 
-    // ------------------------------------------ METHODS ------------------------------------------
+    // ----------------------------------- RECYCLER VIEW METHODS -----------------------------------
 
-    // ---------- RECYCLER VIEW
-    public void onRemoveMeeting(int meetingId) {
+    public void removeMeeting(int meetingId) {
         meetingRepository.deleteMeeting(meetingId);
     }
 
-    public void onGenerateDummyList() {
-        meetingRepository.addMeetingList(DummyGenerator.generateMeetings());
+    public void generateDummyMeetings() {
+        meetingRepository.addDummyList(DummyGenerator.generateMeetings());
     }
+
+    // ----------------------------------- FILTER LAYOUT METHODS -----------------------------------
+
+    public void toggleFilterLayoutVisibility() {
+        listUiModel.setValue(new ListUiModel.Builder(listUiModel.getValue()).toggleDrawerState().build());
+    }
+
+    // --------------------------------------- DATE METHODS ----------------------------------------
 
     // TODO: duplicate code
 
-    // ---------- DATE METHOD
-
-    /**
-     * Called when the user clicks to choose the date of the meeting.
-     */
-    public void onDateClicked(@IdRes int dateInputId) {
+    public void showDatePickerDialog(@IdRes int dateInputId) {
         isStartDate = dateInputId == R.id.start_date_filter_input;
 
-        final LocalDate localDate = isStartDate ? getStartDate() : getEndDate();
-        datePicker.setValue(localDate == null ? LocalDate.now(clock) : localDate);
+        final LocalDate currentDate = isStartDate ? getStartDate() : getEndDate();
+        datePickerEvent.setValue(currentDate == null ? LocalDate.now(clock) : currentDate);
     }
 
     @Nullable
     private LocalDate getStartDate() {
-        final String startDate = listUi.getValue().getStartDate();
+        final String startDate = listUiModel.getValue().getStartDate();
         return startDate.isEmpty() ? null : LocalDate.parse(startDate, DATE_FORMAT);
     }
 
     @Nullable
     private LocalDate getEndDate() {
-        final String EndDate = listUi.getValue().getEndDate();
+        final String EndDate = listUiModel.getValue().getEndDate();
         return EndDate.isEmpty() ? null : LocalDate.parse(EndDate, DATE_FORMAT);
     }
 
-    /**
-     * Called when the user validates the date of the meeting.
-     */
-    public void onDateChanged(int year, int month, int dayOfMonth) {
+    public void setDateFilter(int year, int month, int dayOfMonth) {
         final String dateTime = LocalDate.of(year, month, dayOfMonth).format(DATE_FORMAT);
-        final ListUi.Builder builder = new ListUi.Builder(listUi.getValue());
+        final ListUiModel.Builder builder = new ListUiModel.Builder(listUiModel.getValue());
         if (isStartDate)
             builder.setStartDate(dateTime);
         else
             builder.setEndDate(dateTime);
-
-        listUi.setValue(builder.build());
+        listUiModel.setValue(builder.build());
 
         if (isStartDate) {
             meetingRepository.setFrom(getStartDate());
@@ -129,16 +128,16 @@ public class ListViewModel extends ViewModel {
         }
     }
 
-    // ---------- TIME METHOD
+    // --------------------------------------- TIME METHODS ----------------------------------------
 
     /**
      * Called when the user clicks to choose the start time or end time of the meeting.
      */
-    public void onTimeClicked(@IdRes int timeInputId) {
+    public void showTimePickerDialog(@IdRes int timeInputId) {
         isStartTime = timeInputId == R.id.start_time_filter_input;
 
         final LocalTime localTime = isStartTime ? getStartTime() : getEndTime();
-        timePicker.setValue(localTime == null ? LocalTime.now(clock) : localTime);
+        timePickerEvent.setValue(localTime == null ? LocalTime.now(clock) : localTime);
     }
 
     /**
@@ -146,7 +145,7 @@ public class ListViewModel extends ViewModel {
      */
     @Nullable
     private LocalTime getStartTime() {
-        final String startTime = listUi.getValue().getStartTime();
+        final String startTime = listUiModel.getValue().getStartTime();
         return startTime.isEmpty() ? null : LocalTime.parse(startTime, TIME_FORMAT);
     }
 
@@ -155,21 +154,21 @@ public class ListViewModel extends ViewModel {
      */
     @Nullable
     private LocalTime getEndTime() {
-        final String endTime = listUi.getValue().getEndTime();
+        final String endTime = listUiModel.getValue().getEndTime();
         return endTime.isEmpty() ? null : LocalTime.parse(endTime, TIME_FORMAT);
     }
 
     /**
      * Called when the user validates the start time or end time of the meeting.
      */
-    public void onTimeChanged(int hour, int minute) {
+    public void setTimeFilter(int hour, int minute) {
         final String stringTime = LocalTime.of(hour, minute).format(TIME_FORMAT);
-        final ListUi.Builder builder = new ListUi.Builder(listUi.getValue());
+        final ListUiModel.Builder builder = new ListUiModel.Builder(listUiModel.getValue());
         if (isStartTime)
             builder.setStartTime(stringTime);
         else
             builder.setEndTime(stringTime);
-        listUi.setValue(builder.build());
+        listUiModel.setValue(builder.build());
 
         if (isStartTime) {
             meetingRepository.setFrom(getStartTime());
@@ -178,8 +177,10 @@ public class ListViewModel extends ViewModel {
         }
     }
 
-    public void onFieldCleared(@IdRes int inputId) {
-        final ListUi.Builder builder = new ListUi.Builder(listUi.getValue());
+    // ------------------------------------ DATE & TIME METHODS ------------------------------------
+
+    public void clearDateTimeField(@IdRes int inputId) {
+        final ListUiModel.Builder builder = new ListUiModel.Builder(listUiModel.getValue());
         switch (inputId) {
             case R.id.start_date_filter_layout:
                 builder.setStartDate("");
@@ -198,21 +199,19 @@ public class ListViewModel extends ViewModel {
                 meetingRepository.setUntil((LocalTime) null);
                 break;
         }
-        listUi.setValue(builder.build());
+        listUiModel.setValue(builder.build());
     }
 
-    public void onFilterClicked() {
-        listUi.setValue(new ListUi.Builder(listUi.getValue()).toggleDrawerState().build());
-    }
+    // ---------------------------------- PLACE & MEMBER METHODS -----------------------------------
 
-    public void onPlaceFilterChecked(@NonNull String place, boolean isChecked) {
+    public void setPlaceFilter(@NonNull String place, boolean isChecked) {
         if (isChecked)
             meetingRepository.addPlace(place);
         else
             meetingRepository.removePlace(place);
     }
 
-    public void onMemberFilterChecked(@NonNull String email, boolean isChecked) {
+    public void setMemberFilter(@NonNull String email, boolean isChecked) {
         if (isChecked)
             meetingRepository.addMember(email);
         else

@@ -8,15 +8,15 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/email_layout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/add_member"
-        app:endIconMode="dropdown_menu"
         android:hint="@string/member"
-        app:errorEnabled="true"
         android:labelFor="@id/email_input"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        app:endIconMode="dropdown_menu"
+        app:errorEnabled="true"
+        app:layout_constraintEnd_toStartOf="@id/add_member"
+        app:layout_constraintStart_toStartOf="parent"
         >
 
         <AutoCompleteTextView
@@ -31,29 +31,29 @@
         android:id="@+id/add_member"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="@id/email_layout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/remove_member"
-        app:layout_constraintVertical_chainStyle="packed"
         android:layout_marginStart="20dp"
-        android:src="@drawable/ic_add"
-        app:tint="@android:color/holo_green_dark"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/add_button"
+        android:src="@drawable/ic_add"
+        app:layout_constraintBottom_toTopOf="@id/remove_member"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/email_layout"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:tint="@android:color/holo_green_dark"
         />
 
     <ImageView
         android:id="@+id/remove_member"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@id/add_member"
-        app:layout_constraintEnd_toEndOf="@id/add_member"
-        app:layout_constraintTop_toBottomOf="@id/add_member"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:src="@drawable/ic_remove"
-        app:tint="@android:color/holo_red_dark"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/remove_button"
+        android:src="@drawable/ic_remove"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/add_member"
+        app:layout_constraintStart_toStartOf="@id/add_member"
+        app:layout_constraintTop_toBottomOf="@id/add_member"
+        app:tint="@android:color/holo_red_dark"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>

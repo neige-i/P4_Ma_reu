@@ -1,6 +1,7 @@
 package com.neige_i.mareu.view.add;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -8,7 +9,7 @@ import com.neige_i.mareu.data.DI;
 
 public class AddViewModelFactory implements ViewModelProvider.Factory {
 
-    @NonNull
+    @Nullable
     private static AddViewModelFactory factory;
 
     @NonNull
@@ -30,8 +31,7 @@ public class AddViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(AddViewModel.class)) {
-            // ASKME: get ModelUi from DI for testing
-            return (T) new AddViewModel(DI.getRepository(), DI.getMeetingUi(), DI.getClock());
+            return (T) new AddViewModel(DI.getRepository(), DI.getClock());
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

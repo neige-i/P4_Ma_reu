@@ -1,4 +1,4 @@
-package com.neige_i.mareu.view.add.model;
+package com.neige_i.mareu.view.add;
 
 import android.view.View;
 
@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Model UI for {@link com.neige_i.mareu.R.layout#fragment_add fragment_add} layout.
  */
-public class MeetingUi {
+public class MeetingUiModel {
 
     // ---------- INSTANCE VARIABLE
 
@@ -41,13 +41,13 @@ public class MeetingUi {
     private final String placeError;
 
     @NonNull
-    private final List<MemberUi> memberList;
+    private final List<MemberUiModel> memberList;
 
     // ASKME: why not just using non-final variable with setters
 
     // ---------- CONSTRUCTOR
 
-    public MeetingUi() {
+    public MeetingUiModel() {
         topic = "";
         date = "";
         startTime = "";
@@ -58,14 +58,14 @@ public class MeetingUi {
         startTimeError = null;
         endTimeError = null;
         placeError = null;
-        memberList = new ArrayList<>(Collections.singletonList(new MemberUi("", null, View.INVISIBLE)));
+        memberList = new ArrayList<>(Collections.singletonList(new MemberUiModel("", null, View.INVISIBLE)));
     }
 
-    public MeetingUi(@NonNull String topic, @NonNull String date, @NonNull String startTime,
-                     @NonNull String endTime, @NonNull String place, @Nullable String topicError,
-                     @Nullable String dateError, @Nullable String startTimeError,
-                     @Nullable String endTimeError, @Nullable String placeError,
-                     @NonNull List<MemberUi> memberList) {
+    public MeetingUiModel(@NonNull String topic, @NonNull String date, @NonNull String startTime,
+                          @NonNull String endTime, @NonNull String place, @Nullable String topicError,
+                          @Nullable String dateError, @Nullable String startTimeError,
+                          @Nullable String endTimeError, @Nullable String placeError,
+                          @NonNull List<MemberUiModel> memberList) {
         this.topic = topic;
         this.date = date;
         this.startTime = startTime;
@@ -132,7 +132,7 @@ public class MeetingUi {
     }
 
     @NonNull
-    public List<MemberUi> getMemberList() {
+    public List<MemberUiModel> getMemberList() {
         return memberList;
     }
 
@@ -166,20 +166,20 @@ public class MeetingUi {
         private String startTimeError;
         private String endTimeError;
         private String placeError;
-        private List<MemberUi> memberList;
+        private List<MemberUiModel> memberList;
 
-        public Builder(@NonNull MeetingUi meetingUi) {
-            topic = meetingUi.topic;
-            date = meetingUi.date;
-            startTime = meetingUi.startTime;
-            endTime = meetingUi.endTime;
-            place = meetingUi.place;
-            topicError = meetingUi.topicError;
-            dateError = meetingUi.dateError;
-            startTimeError = meetingUi.startTimeError;
-            endTimeError = meetingUi.endTimeError;
-            placeError = meetingUi.placeError;
-            memberList = meetingUi.memberList;
+        public Builder(@NonNull MeetingUiModel meetingUiModel) {
+            topic = meetingUiModel.topic;
+            date = meetingUiModel.date;
+            startTime = meetingUiModel.startTime;
+            endTime = meetingUiModel.endTime;
+            place = meetingUiModel.place;
+            topicError = meetingUiModel.topicError;
+            dateError = meetingUiModel.dateError;
+            startTimeError = meetingUiModel.startTimeError;
+            endTimeError = meetingUiModel.endTimeError;
+            placeError = meetingUiModel.placeError;
+            memberList = meetingUiModel.memberList;
         }
 
         public Builder setTopic(String topic) {
@@ -232,14 +232,14 @@ public class MeetingUi {
             return this;
         }
 
-        public Builder setMemberList(List<MemberUi> memberList) {
+        public Builder setMemberList(List<MemberUiModel> memberList) {
             this.memberList = memberList;
             return this;
         }
 
-        public MeetingUi build() {
-            return new MeetingUi(topic, date, startTime, endTime, place, topicError, dateError,
-                                 startTimeError, endTimeError, placeError, memberList
+        public MeetingUiModel build() {
+            return new MeetingUiModel(topic, date, startTime, endTime, place, topicError, dateError,
+                                      startTimeError, endTimeError, placeError, memberList
             );
         }
     }

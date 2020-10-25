@@ -20,9 +20,7 @@ public class PlaceFilterAdapter extends RecyclerView.Adapter<PlaceFilterAdapter.
     @NonNull
     private final OnPlaceFilterCheckedListener listener;
 
-    public PlaceFilterAdapter(@NonNull List<Integer> imageList,
-                              @NonNull OnPlaceFilterCheckedListener listener
-    ) {
+    public PlaceFilterAdapter(@NonNull List<Integer> imageList, @NonNull OnPlaceFilterCheckedListener listener) {
         this.imageList = imageList;
         this.listener = listener;
     }
@@ -40,8 +38,8 @@ public class PlaceFilterAdapter extends RecyclerView.Adapter<PlaceFilterAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull PlaceViewHolder holder, int position) {
-        holder.image.setBackgroundResource(imageList.get(position));
-        holder.image.setOnCheckedChangeListener((buttonView, isChecked) -> listener.onPlaceChecked(
+        holder.place.setBackgroundResource(imageList.get(position));
+        holder.place.setOnCheckedChangeListener((buttonView, isChecked) -> listener.onPlaceChecked(
             DummyGenerator.PLACES.get(position),
             isChecked
         ));
@@ -54,11 +52,11 @@ public class PlaceFilterAdapter extends RecyclerView.Adapter<PlaceFilterAdapter.
 
     static class PlaceViewHolder extends RecyclerView.ViewHolder {
 
-        final CheckBox image;
+        final CheckBox place;
 
         public PlaceViewHolder(@NonNull View itemView) {
             super(itemView);
-            image = itemView.findViewById(R.id.place_button);
+            place = itemView.findViewById(R.id.place_button);
         }
     }
 

@@ -1,8 +1,10 @@
 package com.neige_i.mareu.view.add;
 
 import android.view.View;
+import android.widget.DatePicker;
 
 import androidx.test.espresso.action.ViewActions;
+import androidx.test.espresso.matcher.BoundedMatcher;
 import androidx.test.espresso.matcher.RootMatchers;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
@@ -28,16 +30,18 @@ import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.isPlatformPopup;
 import static androidx.test.espresso.matcher.ViewMatchers.hasErrorText;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.neige_i.mareu.util.RecyclerViewItemCountAssertion.withItemCount;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 @RunWith(AndroidJUnit4.class)
-public class AddMeetingTest {
+public class AddActivityTest {
 
     @Rule
     public ActivityScenarioRule<AddActivity> activityRule = new ActivityScenarioRule<>(AddActivity.class);
@@ -69,7 +73,7 @@ public class AddMeetingTest {
         onView(withId(R.id.add_button)).perform(ViewActions.click());
 
         // Then: all errors are triggered
-        onView(withId(R.id.topic_layout)).check(matches(hasTextInputLayoutErrorText(" "))); // ASKME: which one
+        onView(withId(R.id.topic_layout)).check(matches(hasTextInputLayoutErrorText(" ")));
         onView(withId(R.id.topic_layout)).check(matches(notNullValue()));
         onView(withId(R.id.date_layout)).check(matches(notNullValue()));
         onView(withId(R.id.start_time_layout)).check(matches(notNullValue()));
@@ -98,7 +102,7 @@ public class AddMeetingTest {
         onView(withId(R.id.date_input)).perform(click());
 
         // Then: dialog is displayed with the appropriate date
-//        onView(withId(R.id))
+//        onView(withClassName(equalTo(DatePicker.class.getName()))).check(matches(matchesDate(2020, 10, 30)));
     }
 
     @Test
@@ -132,6 +136,19 @@ public class AddMeetingTest {
 
             @Override
             public void describeTo(Description description) {
+            }
+        };
+    }
+
+    private Matcher<View> matchesDate(final int year, final int month, final int day) {
+        return new BoundedMatcher<View, DatePicker>(DatePicker.class) {
+            @Override
+            public void describeTo(Description description) {
+            }
+
+            @Override
+            protected boolean matchesSafely(DatePicker item) {
+                return year == item.getYear() && month == item.getMonth() && day == item.getDayOfMonth();
             }
         };
     }

@@ -6,8 +6,6 @@ import java.time.format.DateTimeFormatter;
 
 public class Util {
 
-    // FIXME: might be local
-
     @NonNull
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 

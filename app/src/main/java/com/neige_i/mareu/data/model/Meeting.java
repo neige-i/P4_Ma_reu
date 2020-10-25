@@ -7,11 +7,11 @@ import java.util.List;
 
 public class Meeting {
 
-    // ---------- CLASS VARIABLE
+    // -------------------------------------- CLASS VARIABLES --------------------------------------
 
     private static int meetingId = 0;
 
-    // ---------- INSTANCE VARIABLE
+    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
     private final int id;
     @NonNull
@@ -25,11 +25,10 @@ public class Meeting {
     @NonNull
     private final List<String> emailList;
 
-    // ---------- CONSTRUCTOR
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
-    public Meeting(int id, @NonNull String topic, @NonNull String place,
-                   @NonNull LocalDateTime startDateTime, @NonNull LocalDateTime endDateTime,
-                   @NonNull List<String> emailList
+    public Meeting(int id, @NonNull String topic, @NonNull String place, @NonNull LocalDateTime startDateTime,
+                   @NonNull LocalDateTime endDateTime, @NonNull List<String> emailList
     ) {
         this.id = id;
         this.topic = topic;
@@ -39,14 +38,11 @@ public class Meeting {
         this.emailList = emailList;
     }
 
-    public Meeting(@NonNull String topic, @NonNull String place,
-                   @NonNull LocalDateTime startDateTime, @NonNull LocalDateTime endDateTime,
-                   @NonNull List<String> emailList
+    public Meeting(@NonNull String topic, @NonNull String place, @NonNull LocalDateTime startDateTime,
+                   @NonNull LocalDateTime endDateTime, @NonNull List<String> emailList
     ) {
         this(meetingId++, topic, place, startDateTime, endDateTime, emailList);
     }
-
-    // ---------- GETTER
 
     public int getId() {
         return id;
@@ -77,13 +73,13 @@ public class Meeting {
         return emailList;
     }
 
-    // ---------- OVERRIDDEN OBJECT's METHODS
+    // --------------------------------- OVERRIDDEN OBJECT METHODS ---------------------------------
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Meeting meeting = (Meeting) o;
+        final Meeting meeting = (Meeting) o;
         return id == meeting.id &&
             topic.equals(meeting.topic) &&
             place.equals(meeting.place) &&
