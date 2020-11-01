@@ -46,7 +46,7 @@ public class AddFragment extends Fragment {
         // Init ViewModel
         final AddViewModel viewModel = new ViewModelProvider(
             requireActivity(),
-            AddViewModelFactory.getInstance()
+            AddViewModelFactory.getInstance(requireActivity().getApplication())
         ).get(AddViewModel.class);
 
         // Init views
@@ -65,6 +65,7 @@ public class AddFragment extends Fragment {
 
         // Update UI when 'state' LiveData is changed
         viewModel.getMeetingUiModel().observe(getViewLifecycleOwner(), meetingUi -> {
+//            Log.d("Neige", "AddFragment::onViewCreated:observeUiModel");
             if (topicInput.getText() != null && !topicInput.getText().toString().equals(meetingUi.getTopic()))
                 topicInput.setText(meetingUi.getTopic());
             startTimeInput.setText(meetingUi.getStartTime());
@@ -151,13 +152,14 @@ public class AddFragment extends Fragment {
             }
 
             @Override
-            public void onRemoveMember(@NonNull MemberUiModel memberUi) {
-                viewModel.removeMember(memberUi);
+            public void onEmailChosen(int position, @NonNull String email) {
+                viewModel.updateMember(position, email);
             }
 
             @Override
-            public void onEmailChosen(int position, @NonNull String email) {
-                viewModel.updateMember(position, email);
+//            public void onRemoveMember(@NonNull MemberUiModel memberUi) {
+            public void onRemoveMember(int position) {
+                viewModel.removeMember(position);
             }
         });
         final RecyclerView recyclerView = requireView().findViewById(R.id.list_member);
@@ -172,7 +174,7 @@ public class AddFragment extends Fragment {
     // ---------------------------------------- FAB METHODS ----------------------------------------
 
     private void configButton(@NonNull AddViewModel viewModel) {
-        requireView().findViewById(R.id.add_button).setOnClickListener(button -> viewModel.onAddMeeting(requireContext()));
+        requireView().findViewById(R.id.add_button).setOnClickListener(button -> viewModel.onAddMeeting());
     }
 
     // ------------------------------------- UI EVENT METHODS --------------------------------------
@@ -198,7 +200,7 @@ public class AddFragment extends Fragment {
             getViewLifecycleOwner(),
             localTime -> new TimePickerDialog(
                 requireContext(),
-                (view1, hourOfDay, minute) -> viewModel.setTime(hourOfDay, minute, requireContext()),
+                (view1, hourOfDay, minute) -> viewModel.setTime(hourOfDay, minute),
                 localTime.getHour(),
                 localTime.getMinute(),
                 true

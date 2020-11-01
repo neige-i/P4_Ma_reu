@@ -9,13 +9,20 @@ public class DI {
     // ----------------------------------------- VARIABLES -----------------------------------------
 
     @NonNull
-    private static final MeetingRepository repository = new MeetingRepositoryImpl();
+    private static final ListingRepository listingRepository = new ListingRepositoryImpl();
+    @NonNull
+    private static final MeetingRepository meetingRepository = new MeetingRepositoryImpl();
 
     // ------------------------------------- INJECTION METHODS -------------------------------------
 
     @NonNull
-    public static MeetingRepository getRepository() {
-        return repository;
+    public static ListingRepository getListingRepository() {
+        return listingRepository;
+    }
+
+    @NonNull
+    public static MeetingRepository getMeetingRepository() {
+        return meetingRepository;
     }
 
     @NonNull

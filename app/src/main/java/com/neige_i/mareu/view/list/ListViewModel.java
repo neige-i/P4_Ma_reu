@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DummyGenerator;
-import com.neige_i.mareu.data.MeetingRepository;
+import com.neige_i.mareu.data.ListingRepository;
 import com.neige_i.mareu.view.util.SingleLiveEvent;
 
 import java.time.Clock;
@@ -25,7 +25,7 @@ public class ListViewModel extends ViewModel {
     // ------------------------------------  INSTANCE VARIABLES ------------------------------------
 
     @NonNull
-    private final MeetingRepository meetingRepository;
+    private final ListingRepository listingRepository;
     @NonNull
     private final Clock clock; // Handy for testing
 
@@ -48,14 +48,14 @@ public class ListViewModel extends ViewModel {
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
-    public ListViewModel(@NonNull MeetingRepository meetingRepository, @NonNull Clock clock) {
-        this.meetingRepository = meetingRepository;
+    public ListViewModel(@NonNull ListingRepository listingRepository, @NonNull Clock clock) {
+        this.listingRepository = listingRepository;
         this.clock = clock;
     }
 
     public LiveData<ListUiModel> getListUiModel() {
         return Transformations.switchMap(
-            meetingRepository.getFilteredList(),
+            listingRepository.getFilteredList(),
             meetingList -> Transformations.map(
                 listUiModel,
                 ui -> new ListUiModel.Builder(ui).setMeetingList(meetingList).build()
@@ -76,11 +76,11 @@ public class ListViewModel extends ViewModel {
     // ----------------------------------- RECYCLER VIEW METHODS -----------------------------------
 
     public void removeMeeting(int meetingId) {
-        meetingRepository.deleteMeeting(meetingId);
+        listingRepository.deleteMeeting(meetingId);
     }
 
     public void generateDummyMeetings() {
-        meetingRepository.addDummyList(DummyGenerator.generateMeetings());
+        listingRepository.addMeetings(DummyGenerator.generateMeetings());
     }
 
     // ----------------------------------- FILTER LAYOUT METHODS -----------------------------------
@@ -122,9 +122,9 @@ public class ListViewModel extends ViewModel {
         listUiModel.setValue(builder.build());
 
         if (isStartDate) {
-            meetingRepository.setFrom(getStartDate());
+            listingRepository.setFrom(getStartDate());
         } else {
-            meetingRepository.setUntil(getEndDate());
+            listingRepository.setUntil(getEndDate());
         }
     }
 
@@ -171,9 +171,9 @@ public class ListViewModel extends ViewModel {
         listUiModel.setValue(builder.build());
 
         if (isStartTime) {
-            meetingRepository.setFrom(getStartTime());
+            listingRepository.setFrom(getStartTime());
         } else {
-            meetingRepository.setUntil(getEndTime());
+            listingRepository.setUntil(getEndTime());
         }
     }
 
@@ -184,19 +184,19 @@ public class ListViewModel extends ViewModel {
         switch (inputId) {
             case R.id.start_date_filter_layout:
                 builder.setStartDate("");
-                meetingRepository.setFrom((LocalDate) null);
+                listingRepository.setFrom((LocalDate) null);
                 break;
             case R.id.end_date_filter_layout:
                 builder.setEndDate("");
-                meetingRepository.setUntil((LocalDate) null);
+                listingRepository.setUntil((LocalDate) null);
                 break;
             case R.id.start_time_filter_layout:
                 builder.setStartTime("");
-                meetingRepository.setFrom((LocalTime) null);
+                listingRepository.setFrom((LocalTime) null);
                 break;
             case R.id.end_time_filter_layout:
                 builder.setEndTime("");
-                meetingRepository.setUntil((LocalTime) null);
+                listingRepository.setUntil((LocalTime) null);
                 break;
         }
         listUiModel.setValue(builder.build());
@@ -206,15 +206,15 @@ public class ListViewModel extends ViewModel {
 
     public void setPlaceFilter(@NonNull String place, boolean isChecked) {
         if (isChecked)
-            meetingRepository.addPlace(place);
+            listingRepository.addPlace(place);
         else
-            meetingRepository.removePlace(place);
+            listingRepository.removePlace(place);
     }
 
     public void setMemberFilter(@NonNull String email, boolean isChecked) {
         if (isChecked)
-            meetingRepository.addMember(email);
+            listingRepository.addMember(email);
         else
-            meetingRepository.removeMember(email);
+            listingRepository.removeMember(email);
     }
 }

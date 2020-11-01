@@ -1,9 +1,15 @@
 package com.neige_i.mareu.data.model;
 
-import androidx.annotation.NonNull;
+import android.util.Log;
 
-import java.time.LocalDateTime;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Meeting {
 
@@ -15,33 +21,59 @@ public class Meeting {
 
     private final int id;
     @NonNull
-    private final String topic;
+    private String topic;
+    @Nullable
+    private LocalDate date;
+    @Nullable
+    private LocalTime startTime;
+    @Nullable
+    private LocalTime endTime;
     @NonNull
-    private final String place;
+    private String place;
     @NonNull
-    private final LocalDateTime startDateTime;
-    @NonNull
-    private final LocalDateTime endDateTime;
-    @NonNull
-    private final List<String> emailList;
+    private List<String> memberList;
+
+    private int memberIndex = -1;
 
     // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
-    public Meeting(int id, @NonNull String topic, @NonNull String place, @NonNull LocalDateTime startDateTime,
-                   @NonNull LocalDateTime endDateTime, @NonNull List<String> emailList
-    ) {
-        this.id = id;
-        this.topic = topic;
-        this.place = place;
-        this.startDateTime = startDateTime;
-        this.endDateTime = endDateTime;
-        this.emailList = emailList;
+
+    public Meeting() {
+//        Log.d("Neige", "Meeting::constructor first");
+        this("", null, null, null, "", new ArrayList<>());
+//        topic = "";
+//        date = null;
+//        startTime = null;
+//        endTime = null;
+//        place = "";
+//        memberList = new ArrayList<>(/*Collections.singletonList("")*/);
     }
 
-    public Meeting(@NonNull String topic, @NonNull String place, @NonNull LocalDateTime startDateTime,
-                   @NonNull LocalDateTime endDateTime, @NonNull List<String> emailList
+//    public Meeting(int id, @NonNull String topic, @NonNull LocalDate date, @NonNull LocalTime startTime, @NonNull LocalTime endTime,
+//                   @NonNull String place, @NonNull List<String> memberList
+//    ) {
+//        this.id = id;
+//        this.topic = topic;
+//        this.date = date;
+//        this.startTime = startTime;
+//        this.endTime = endTime;
+//        this.place = place;
+//        this.memberList = memberList;
+//    }
+
+    public Meeting(@NonNull String topic, @Nullable LocalDate date, @Nullable LocalTime startTime,
+                   @Nullable LocalTime endTime, @NonNull String place, @NonNull List<String> memberList
     ) {
-        this(meetingId++, topic, place, startDateTime, endDateTime, emailList);
+        this.id = meetingId++;
+        this.topic = topic;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.place = place;
+        this.memberList = memberList;
+        Log.d("Neige", "Meeting::constructor bis");
+
+        resetMemberIndex();
     }
 
     public int getId() {
@@ -53,24 +85,70 @@ public class Meeting {
         return topic;
     }
 
+    @Nullable
+    public LocalDate getDate() {
+        return date;
+    }
+
+    @Nullable
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    @Nullable
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
     @NonNull
     public String getPlace() {
         return place;
     }
 
     @NonNull
-    public LocalDateTime getStartDateTime() {
-        return startDateTime;
+    public List<String> getMemberList() {
+        return memberList;
     }
 
-    @NonNull
-    public LocalDateTime getEndDateTime() {
-        return endDateTime;
+    public void setTopic(@NonNull String topic) {
+        this.topic = topic;
+        resetMemberIndex();
     }
 
-    @NonNull
-    public List<String> getEmailList() {
-        return emailList;
+    public void setDate(@Nullable LocalDate date) {
+        this.date = date;
+        resetMemberIndex();
+    }
+
+    public void setStartTime(@Nullable LocalTime startTime) {
+        this.startTime = startTime;
+        resetMemberIndex();
+    }
+
+    public void setEndTime(@Nullable LocalTime endTime) {
+        this.endTime = endTime;
+        resetMemberIndex();
+    }
+
+    public void setPlace(@NonNull String place) {
+        this.place = place;
+        resetMemberIndex();
+    }
+
+    public void setMemberList(@NonNull List<String> memberList) {
+        this.memberList = memberList;
+    }
+
+    public int getMemberIndex() {
+        return memberIndex;
+    }
+
+    public void setMemberIndex(int memberIndex) {
+        this.memberIndex = memberIndex;
+    }
+
+    private void resetMemberIndex() {
+        memberIndex = -1;
     }
 
     // --------------------------------- OVERRIDDEN OBJECT METHODS ---------------------------------
@@ -82,11 +160,25 @@ public class Meeting {
         final Meeting meeting = (Meeting) o;
         return id == meeting.id &&
             topic.equals(meeting.topic) &&
+            Objects.equals(date, meeting.date) &&
+            Objects.equals(startTime, meeting.startTime) &&
+            Objects.equals(endTime, meeting.endTime) &&
             place.equals(meeting.place) &&
-            startDateTime.equals(meeting.startDateTime) &&
-            endDateTime.equals(meeting.endDateTime) &&
-            emailList.equals(meeting.emailList);
+            memberList.equals(meeting.memberList);
     }
+
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//        final Meeting meeting = (Meeting) o;
+//        return id == meeting.id &&
+//            topic.equals(meeting.topic) &&
+//            place.equals(meeting.place) &&
+//            startTime.equals(meeting.startTime) &&
+//            endTime.equals(meeting.endTime) &&
+//            memberList.equals(meeting.memberList);
+//    }
 
     @NonNull
     @Override
@@ -94,10 +186,11 @@ public class Meeting {
         return "Meeting{" +
             "id=" + id +
             ", topic='" + topic + '\'' +
+            ", date=" + date +
+            ", startTime=" + startTime +
+            ", endTime=" + endTime +
             ", place='" + place + '\'' +
-            ", startDateTime=" + startDateTime +
-            ", endDateTime=" + endDateTime +
-            ", emailList=" + emailList +
+            ", memberList=" + memberList +
             '}';
     }
 }

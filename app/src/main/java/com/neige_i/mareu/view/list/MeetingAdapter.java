@@ -53,11 +53,11 @@ public class MeetingAdapter extends ListAdapter<Meeting, MeetingAdapter.MeetingV
         holder.topic.setText(meeting.getTopic());
         holder.dateAndTime.setText(holder.itemView.getResources().getString(
             R.string.start_and_end_time,
-            meeting.getStartDateTime().toLocalDate().format(DATE_FORMAT),
-            meeting.getStartDateTime().toLocalTime().format(TIME_FORMAT),
-            meeting.getEndDateTime().toLocalTime().format(TIME_FORMAT)
+            meeting.getDate().format(DATE_FORMAT),
+            meeting.getStartTime().format(TIME_FORMAT),
+            meeting.getEndTime().format(TIME_FORMAT)
         ));
-        holder.members.setText(meeting.getEmailList().toString());
+        holder.members.setText(meeting.getMemberList().toString());
         holder.deleteButton.setOnClickListener(v -> onMeetingChangedListener.onRemoveMeeting(meeting.getId()));
     }
 

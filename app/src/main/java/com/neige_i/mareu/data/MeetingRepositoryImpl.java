@@ -1,18 +1,14 @@
 package com.neige_i.mareu.data;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
-import com.neige_i.mareu.data.model.Filters;
 import com.neige_i.mareu.data.model.Meeting;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MeetingRepositoryImpl implements MeetingRepository {
@@ -20,145 +16,79 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
     @NonNull
-    private final MutableLiveData<List<Meeting>> meetingList = new MutableLiveData<>();
-    @NonNull
-    private final MutableLiveData<Filters> filters = new MutableLiveData<>();
+    private final MutableLiveData<Meeting> meeting = new MutableLiveData<>();
     @NonNull
     private final List<String> availableMembers = new ArrayList<>();
 
-    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
-
-    public MeetingRepositoryImpl() {
-        meetingList.setValue(new ArrayList<>());
-        filters.setValue(new Filters());
-        resetAvailableMembers();
-    }
-
-    // -------------------------------------- GENERAL METHODS --------------------------------------
-
-    /**
-     * Returns a filtered meeting list.<br />
-     * Keep tracking the last updated value of {@link #meetingList} with
-     * {@link Transformations#switchMap switchMap()} and of {@link #filters} with
-     * {@link Transformations#map map()}.<br />
-     * Then, for each filter, remove the meeting from the list if the condition is met.
-     */
-    @NonNull
     @Override
-    public LiveData<List<Meeting>> getFilteredList() {
-        return Transformations.switchMap(
-            meetingList,
-            meetingList -> Transformations.map(filters, filters -> {
-                // Return a new list to keep the original one unchanged
-                final List<Meeting> filteredMeetings = new ArrayList<>(meetingList);
-
-                if (filters.getFromDate() != null) {
-                    filteredMeetings.removeIf(meeting -> meeting.getEndDateTime().toLocalDate().isBefore(
-                        filters.getFromDate()));
-                }
-                if (filters.getUntilDate() != null) {
-                    filteredMeetings.removeIf(meeting -> meeting.getStartDateTime().toLocalDate().isAfter(
-                        filters.getUntilDate()));
-                }
-                if (filters.getFromTime() != null) {
-                    filteredMeetings.removeIf(meeting -> meeting.getEndDateTime().toLocalTime().isBefore(
-                        filters.getFromTime()));
-                }
-                if (filters.getUntilTime() != null) {
-                    filteredMeetings.removeIf(meeting -> meeting.getStartDateTime().toLocalTime().isAfter(
-                        filters.getUntilTime()));
-                }
-                if (!filters.getPlaces().isEmpty()) {
-                    filteredMeetings.removeIf(meeting -> !filters.getPlaces().contains(meeting.getPlace()));
-                }
-                if (!filters.getMembers().isEmpty()) {
-                    filteredMeetings.removeIf(meeting -> Collections.disjoint(
-                        meeting.getEmailList(),
-                        filters.getMembers()
-                    ));
-                }
-                return filteredMeetings;
-            })
-        );
+    public void initRepository() {
+        meeting.setValue(new Meeting());
+        initAvailableMembers();
     }
 
-    // ----------------------------------- MEETING LIST METHODS ------------------------------------
+    // -------------------------------------- MEETING METHODS --------------------------------------
 
     @NonNull
     @Override
-    public LiveData<List<Meeting>> getAllMeetings() {
-        return meetingList;
+    public LiveData<Meeting> getMeeting() {
+        return meeting;
     }
 
     @Override
-    public void addMeeting(@NonNull Meeting meetingToAdd) {
-        final List<Meeting> meetings = new ArrayList<>(meetingList.getValue());
-        meetings.add(meetingToAdd);
-        meetingList.setValue(meetings);
+    public void setTopic(@NonNull String topic) {
+        meeting.getValue().setTopic(topic);
+        updateLiveData();
     }
 
     @Override
-    public void addDummyList(@NonNull List<Meeting> meetingsToAdd) {
-        final List<Meeting> meetings = new ArrayList<>(meetingList.getValue());
-        meetings.addAll(meetingsToAdd);
-        meetingList.setValue(meetings);
+    public void setDate(@NonNull LocalDate date) {
+        meeting.getValue().setDate(date);
+        updateLiveData();
     }
 
     @Override
-    public void deleteMeeting(int meetingId) {
-        final List<Meeting> meetings = new ArrayList<>(meetingList.getValue());
-        meetings.removeIf(meeting -> meeting.getId() == meetingId);
-        meetingList.setValue(meetings);
-    }
-
-    // -------------------------------------- FILTER METHODS ---------------------------------------
-
-    @Override
-    public void setFrom(@Nullable LocalDate fromDate) {
-        filters.setValue(new Filters.Builder(filters.getValue()).setFromDate(fromDate).build());
+    public void setStartTime(@NonNull LocalTime startTime) {
+        meeting.getValue().setStartTime(startTime);
+        updateLiveData();
     }
 
     @Override
-    public void setUntil(@Nullable LocalDate untilDate) {
-        filters.setValue(new Filters.Builder(filters.getValue()).setUntilDate(untilDate).build());
+    public void setEndTime(@NonNull LocalTime endTime) {
+        meeting.getValue().setEndTime(endTime);
+        updateLiveData();
     }
 
     @Override
-    public void setFrom(@Nullable LocalTime fromTime) {
-        filters.setValue(new Filters.Builder(filters.getValue()).setFromTime(fromTime).build());
+    public void setPlace(@NonNull String place) {
+        meeting.getValue().setPlace(place);
+        updateLiveData();
     }
 
     @Override
-    public void setUntil(@Nullable LocalTime untilTime) {
-        filters.setValue(new Filters.Builder(filters.getValue()).setUntilTime(untilTime).build());
+    public void addMember(int position) {
+        meeting.getValue().getMemberList().add(position, "");
+        meeting.getValue().setMemberIndex(position);
+        updateLiveData();
     }
 
     @Override
-    public void addPlace(@NonNull String place) {
-        final List<String> places = new ArrayList<>(filters.getValue().getPlaces());
-        places.add(place);
-        filters.setValue(new Filters.Builder(filters.getValue()).setPlaces(places).build());
+    public void updateMember(int position, @NonNull String member) {
+        meeting.getValue().getMemberList().set(position, member);
+        meeting.getValue().setMemberIndex(position);
+        updateLiveData();
+        setAvailableMembers();
     }
 
     @Override
-    public void removePlace(@NonNull String place) {
-        final List<String> places = new ArrayList<>(filters.getValue().getPlaces());
-        places.remove(place);
-        filters.setValue(new Filters.Builder(filters.getValue()).setPlaces(places).build());
+    public void removeMember(int position) {
+        meeting.getValue().getMemberList().remove(position);
+        meeting.getValue().setMemberIndex(position);
+        updateLiveData();
+        setAvailableMembers();
     }
 
-    @Override
-    public void addMember(@NonNull String member) {
-        final List<String> members = new ArrayList<>(filters.getValue().getMembers());
-        members.add(member);
-        filters.setValue(new Filters.Builder(filters.getValue()).setMembers(members).build());
-    }
-
-    @Override
-    public void removeMember(@NonNull String member) {
-        final List<String> members = new ArrayList<>(filters.getValue().getMembers());
-        members.remove(member);
-        filters.setValue(new Filters.Builder(filters.getValue()).setMembers(members).build());
+    private void updateLiveData() {
+        meeting.setValue(meeting.getValue());
     }
 
     // --------------------------------- AVAILABLE MEMBERS METHODS ---------------------------------
@@ -168,18 +98,13 @@ public class MeetingRepositoryImpl implements MeetingRepository {
         return availableMembers;
     }
 
-    @Override
-    public void addAvailableMembers(@NonNull String memberEmail) {
-        availableMembers.add(memberEmail);
-    }
-
-    @Override
-    public void removeAvailableMembers(@NonNull String memberEmail) {
-        availableMembers.remove(memberEmail);
-    }
-
-    public void resetAvailableMembers() {
+    private void initAvailableMembers() {
         availableMembers.clear();
         availableMembers.addAll(DummyGenerator.EMAILS);
+    }
+
+    private void setAvailableMembers() {
+        initAvailableMembers();
+        availableMembers.removeIf(email -> meeting.getValue().getMemberList().contains(email));
     }
 }

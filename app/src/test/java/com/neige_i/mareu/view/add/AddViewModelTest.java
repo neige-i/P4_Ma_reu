@@ -48,7 +48,7 @@ public class AddViewModelTest {
 
     @NonNull
     private final AddViewModel viewModel = new AddViewModel(
-        DI.getRepository(),
+        DI.getListingRepository(),
         Clock.fixed(
             ZonedDateTime.of(defaultDate, defaultTime, ZoneId.systemDefault()).toInstant(),
             ZoneId.systemDefault()

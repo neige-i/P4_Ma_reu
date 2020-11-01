@@ -46,6 +46,7 @@ public class MemberAdapter extends ListAdapter<MemberUiModel, MemberAdapter.Memb
 
         final AutoCompleteTextView email;
         final TextInputLayout emailLayout;
+        final ImageView addButton;
         final ImageView removeButton;
 
         public MemberViewHolder(@NonNull View itemView, @NonNull OnMemberChangedListener onMemberChangedListener) {
@@ -56,7 +57,7 @@ public class MemberAdapter extends ListAdapter<MemberUiModel, MemberAdapter.Memb
             email.setAdapter(new ArrayAdapter<>(
                 itemView.getContext(),
                 android.R.layout.simple_list_item_1,
-                DI.getRepository().getAvailableMembers()
+                DI.getMeetingRepository().getAvailableMembers()
             ));
             email.setOnItemClickListener((parent, view, position, id) ->
                     onMemberChangedListener.onEmailChosen(getAdapterPosition(), parent.getItemAtPosition(position).toString()));
@@ -66,17 +67,18 @@ public class MemberAdapter extends ListAdapter<MemberUiModel, MemberAdapter.Memb
 
             // Config buttons
             removeButton = itemView.findViewById(R.id.remove_member);
-            itemView.findViewById(R.id.add_member).setOnClickListener(v ->
+            removeButton.setOnClickListener(v -> onMemberChangedListener.onRemoveMember(getAdapterPosition()));
+            addButton = itemView.findViewById(R.id.add_member);
+            addButton.setOnClickListener(v ->
                     onMemberChangedListener.onAddMember(getAdapterPosition()));
         }
 
         void bind(@NonNull MemberUiModel memberUiModel, @NonNull OnMemberChangedListener onMemberChangedListener) {
-            Log.d("Nino", "bind() called with: memberUi = [" + memberUiModel + "]");
             email.setText(memberUiModel.getEmail(), false);
             emailLayout.setError(memberUiModel.getEmailError());
+            addButton.setVisibility(memberUiModel.getAddButtonVisibility());
             removeButton.setVisibility(memberUiModel.getRemoveButtonVisibility());
-            removeButton.setOnClickListener(v -> onMemberChangedListener.onRemoveMember(
-                memberUiModel));
+//            removeButton.setOnClickListener(v -> onMemberChangedListener.onRemoveMember(memberUiModel));
         }
     }
 
@@ -95,7 +97,8 @@ public class MemberAdapter extends ListAdapter<MemberUiModel, MemberAdapter.Memb
 
     interface OnMemberChangedListener {
         void onAddMember(int position);
-        void onRemoveMember(@NonNull MemberUiModel memberUiModel);
         void onEmailChosen(int position, @NonNull String email);
+        void onRemoveMember(int position);
+//        void onRemoveMember(@NonNull MemberUiModel memberUiModel);
     }
 }

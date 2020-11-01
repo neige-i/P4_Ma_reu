@@ -11,4 +11,9 @@ public class Util {
 
     @NonNull
     public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+
+    @NonNull
+    public static final String EMPTY_ERROR_MESSAGE = " ";
+
+    public static final int NO_ERROR = 0;
 }

@@ -12,48 +12,32 @@ import java.util.List;
 
 public interface MeetingRepository {
 
-    // -------------------------------------- GENERAL METHODS --------------------------------------
+    void initRepository();
+
+    // -------------------------------------- MEETING METHODS --------------------------------------
 
     @NonNull
-    LiveData<List<Meeting>> getFilteredList();
+    LiveData<Meeting> getMeeting();
 
-    // ----------------------------------- MEETING LIST METHODS ------------------------------------
+    void setTopic(@NonNull String topic);
 
-    @NonNull
-    LiveData<List<Meeting>> getAllMeetings();
+    void setDate(@NonNull LocalDate date);
 
-    void addMeeting(@NonNull Meeting meetingToAdd);
+    void setStartTime(@NonNull LocalTime startTime);
 
-    void addDummyList(@NonNull List<Meeting> meetingsToAdd);
+    void setEndTime(@NonNull LocalTime endTime);
 
-    void deleteMeeting(int meetingId);
+    void setPlace(@NonNull String place);
 
-    // -------------------------------------- FILTER METHODS ---------------------------------------
+    void addMember(int position);
 
-    void setFrom(@Nullable LocalDate fromDate);
+    void updateMember(int position, @NonNull String member);
 
-    void setUntil(@Nullable LocalDate untilDate);
-
-    void setFrom(@Nullable LocalTime fromTime);
-
-    void setUntil(@Nullable LocalTime untilTime);
-
-    void addPlace(@NonNull String place);
-
-    void removePlace(@NonNull String place);
-
-    void addMember(@NonNull String member);
-
-    void removeMember(@NonNull String member);
+//    void removeMember(@NonNull String member);
+    void removeMember(int position);
 
     // --------------------------------- AVAILABLE MEMBERS METHODS ---------------------------------
 
     @NonNull
     List<String> getAvailableMembers();
-
-    void addAvailableMembers(@NonNull String memberEmail);
-
-    void removeAvailableMembers(@NonNull String memberEmail);
-
-    void resetAvailableMembers();
 }

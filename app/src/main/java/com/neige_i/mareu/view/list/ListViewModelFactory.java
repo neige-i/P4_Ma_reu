@@ -31,7 +31,7 @@ public class ListViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(ListViewModel.class)) {
-            return (T) new ListViewModel(DI.getRepository(), DI.getClock());
+            return (T) new ListViewModel(DI.getListingRepository(), DI.getClock());
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

@@ -5,7 +5,8 @@ import androidx.annotation.NonNull;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.model.Meeting;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,50 +77,57 @@ public abstract class DummyGenerator {
 
     @NonNull
     public static List<Meeting> generateMeetings() {
-        final LocalDateTime startDateTime = LocalDateTime.of(2020, 10, 16, 8, 0);
-        final LocalDateTime endDateTime = LocalDateTime.of(2020, 10, 16, 9, 0);
+        final LocalDate date = LocalDate.of(2020, 11, 1);
+        final LocalTime startTime = LocalTime.of(8, 0);
+        final LocalTime endTime = LocalTime.of(9, 0);
 
         return Arrays.asList(
             new Meeting(
                 "Meeting A",
+                date,
+                startTime,
+                endTime,
                 PLACES.get(0),
-                startDateTime,
-                endDateTime,
                 EMAILS.subList(0, 2)
             ),
             new Meeting(
                 "Meeting B",
+                date,
+                startTime.plusHours(2),
+                endTime.plusHours(4),
                 PLACES.get(1),
-                startDateTime.plusHours(2),
-                endDateTime.plusHours(4),
                 EMAILS.subList(5, 7)
             ),
             new Meeting(
                 "Meeting C",
+                date.plusDays(1),
+                startTime.plusHours(3),
+                endTime.plusHours(3).plusMinutes(30),
                 PLACES.get(2),
-                startDateTime.plusDays(1).plusHours(3),
-                endDateTime.plusDays(1).plusHours(3).plusMinutes(30),
                 EMAILS.subList(7, 8)
             ),
             new Meeting(
                 "Meeting D",
+                date.plusDays(1),
+                startTime.plusHours(6).plusMinutes(45),
+                endTime.plusHours(7).plusMinutes(10),
                 PLACES.get(3),
-                startDateTime.plusDays(1).plusHours(6).plusMinutes(45),
-                endDateTime.plusDays(1).plusHours(7).plusMinutes(10),
                 EMAILS.subList(3, 6)
             ),
             new Meeting(
                 "Meeting E",
+                date.plusDays(3),
+                startTime.plusMinutes(20),
+                endTime.plusHours(5),
                 PLACES.get(4),
-                startDateTime.plusDays(3).plusMinutes(20),
-                endDateTime.plusDays(3).plusHours(5),
                 EMAILS.subList(4, 7)
             ),
             new Meeting(
                 "Meeting F",
+                date.plusDays(5),
+                startTime.plusHours(5).plusMinutes(15),
+                endTime.plusHours(7).plusMinutes(55),
                 PLACES.get(6),
-                startDateTime.plusDays(5).plusHours(5).plusMinutes(15),
-                endDateTime.plusDays(5).plusHours(7).plusMinutes(55),
                 EMAILS.subList(2, 6)
             )
         );
