@@ -161,6 +161,8 @@ public class NewMeetingUiModel {
             int addButtonVisibility = memberList.size() < DummyGenerator.EMAILS.size() ? View.VISIBLE : View.INVISIBLE;
             int removeButtonVisibility = memberList.size() == 1 ? View.INVISIBLE : View.VISIBLE;
             final Member member = memberList.get(i);
+
+            // TODO: commenting the following instruction makes the empty UI test pass
             this.memberList.add(new MemberUiModel(
                 member.getId(),
                 member.getEmail(),

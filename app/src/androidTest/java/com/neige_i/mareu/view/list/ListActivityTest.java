@@ -76,6 +76,7 @@ public class ListActivityTest {
         // Then: the filter layout is hidden
         onView(withId(R.id.filter_drawer)).check(matches(not(isDisplayed())));
     }
+/*
 
     @Test
     public void onAddButtonClicked_startActivity() {
@@ -87,6 +88,7 @@ public class ListActivityTest {
         // Then: AddActivity is started
         intended(hasComponent(AddActivity.class.getName()));
     }
+*/
 
     @Test
     public void onAddButtonLongClicked_showItems() {
@@ -206,6 +208,7 @@ public class ListActivityTest {
             .check(withItemCount(1))
             .check(matches(hasDescendant(withText("Meeting C"))));
     }
+/*
 
     @Test
     public void onAddCorrectMember_endActivityAndUpdateList() {
@@ -236,4 +239,5 @@ public class ListActivityTest {
             .check(matches(hasDescendant(withText("11/07/2020 - 13:00 - 14:30"))))
             .check(matches(hasDescendant(withText("maxime"))));
     }
+*/
 }

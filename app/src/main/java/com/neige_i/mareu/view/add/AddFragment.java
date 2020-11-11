@@ -77,6 +77,7 @@ public class AddFragment extends Fragment {
             startTimeInput.setText(meetingUiModel.getStartTime());
             endTimeInput.setText(meetingUiModel.getEndTime());
             setTextWithoutFilter(placeInput, meetingUiModel.getPlace());
+            // TODO: commenting the following instruction makes the empty UI test pass
             memberUiAdapter.submitList(meetingUiModel.getMemberList());
             topicLayout.setError(meetingUiModel.getTopicError(requireActivity().getApplication()));
             dateLayout.setError(meetingUiModel.getDateError(requireActivity().getApplication()));

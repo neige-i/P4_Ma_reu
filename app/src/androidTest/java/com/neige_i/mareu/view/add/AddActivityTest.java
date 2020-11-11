@@ -43,6 +43,11 @@ public class AddActivityTest {
     public ActivityScenarioRule<AddActivity> activityRule = new ActivityScenarioRule<>(AddActivity.class);
 
     @Test
+    public void name() {
+        // TODO: should be successful
+    }
+
+    @Test
     public void onActivityStarted_checkInitialState() {
         // Given: initial state
 
