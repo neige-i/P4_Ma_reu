@@ -17,4 +17,8 @@
         <item name="colorSecondary">@color/colorAccent</item>
         <item name="colorOnSecondary">@android:color/white</item>
     </style>
+
+    <style name="CustomHint" parent="TextAppearance.Design.Hint">
+        <item name="android:textSize">@dimen/input_hint_size</item>
+    </style>
 </resources>

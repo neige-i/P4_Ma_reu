@@ -1,18 +1,24 @@
-package com.neige_i.mareu.data;
+package com.neige_i.mareu.data.repository;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
+import com.neige_i.mareu.data.model.Filters;
 import com.neige_i.mareu.data.model.Meeting;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+/**
+ * Handles all the operations about the meeting list.
+ */
 public interface ListingRepository {
 
     // -------------------------------------- GENERAL METHODS --------------------------------------
+
+    void initRepository();
 
     @NonNull
     LiveData<List<Meeting>> getFilteredList();
@@ -26,9 +32,12 @@ public interface ListingRepository {
 
     void addMeetings(@NonNull List<Meeting> meetingsToAdd);
 
-    void deleteMeeting(int meetingId);
+    void removeMeeting(int position);
 
     // -------------------------------------- FILTER METHODS ---------------------------------------
+
+    @NonNull
+    LiveData<Filters> getFilters();
 
     void setFrom(@Nullable LocalDate fromDate);
 
@@ -42,7 +51,7 @@ public interface ListingRepository {
 
     void removePlace(@NonNull String place);
 
-    void addMember(@NonNull String member);
+    void addEmail(@NonNull String email);
 
-    void removeMember(@NonNull String member);
+    void removeEmail(@NonNull String email);
 }

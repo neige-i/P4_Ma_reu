@@ -15,16 +15,21 @@ import java.util.List;
 
 public class PlaceFilterAdapter extends RecyclerView.Adapter<PlaceFilterAdapter.PlaceViewHolder> {
 
+    // -------------------------------------- LOCAL VARIABLES --------------------------------------
+
     @NonNull
     private final List<Integer> imageList;
     @NonNull
     private final OnPlaceFilterCheckedListener listener;
+
+    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
 
     public PlaceFilterAdapter(@NonNull List<Integer> imageList, @NonNull OnPlaceFilterCheckedListener listener) {
         this.imageList = imageList;
         this.listener = listener;
     }
 
+    // -------------------------------------- ADAPTER METHODS --------------------------------------
 
     @NonNull
     @Override
@@ -50,6 +55,8 @@ public class PlaceFilterAdapter extends RecyclerView.Adapter<PlaceFilterAdapter.
         return imageList.size();
     }
 
+    // ------------------------------------- VIEW HOLDER CLASS -------------------------------------
+
     static class PlaceViewHolder extends RecyclerView.ViewHolder {
 
         final CheckBox place;
@@ -59,6 +66,8 @@ public class PlaceFilterAdapter extends RecyclerView.Adapter<PlaceFilterAdapter.
             place = itemView.findViewById(R.id.place_button);
         }
     }
+
+    // ------------------------------------ CALLBACK INTERFACE -------------------------------------
 
     interface OnPlaceFilterCheckedListener {
         void onPlaceChecked(@NonNull String place, boolean isChecked);

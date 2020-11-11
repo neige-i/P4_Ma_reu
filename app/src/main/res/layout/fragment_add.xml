@@ -8,16 +8,10 @@
     tools:context=".view.add.AddFragment"
     >
 
-    <!--
-        ASKME: focus on first input view
-         focus/click on TextInputEditText need 2 clicks
-         Layout CoordinatorLayout's child views
-     -->
-    <!-- TODO: disable scroll if enough height -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="70dp"
         android:fillViewport="true"
         >
@@ -31,11 +25,11 @@
                 android:id="@+id/topic_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
-                android:layout_marginEnd="30sp"
+                android:layout_marginStart="@dimen/sideMargin"
+                android:layout_marginEnd="@dimen/sideMargin"
                 android:hint="@string/topic"
                 app:errorEnabled="true"
-                app:layout_constraintBottom_toTopOf="@id/date_layout"
+                app:hintTextAppearance="@style/CustomHint"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_chainStyle="packed"
                 >
@@ -45,6 +39,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:maxLines="1"
+                    android:textSize="@dimen/input_text_size"
                     />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -54,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/date"
                 app:errorEnabled="true"
-                app:layout_constraintBottom_toTopOf="@id/start_time_layout"
+                app:hintTextAppearance="@style/CustomHint"
                 app:layout_constraintEnd_toEndOf="@id/topic_layout"
                 app:layout_constraintStart_toStartOf="@id/topic_layout"
                 app:layout_constraintTop_toBottomOf="@id/topic_layout"
@@ -65,6 +60,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:focusableInTouchMode="false"
+                    android:textSize="@dimen/input_text_size"
                     />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -75,7 +71,7 @@
                 android:layout_marginEnd="20sp"
                 android:hint="@string/start_time"
                 app:errorEnabled="true"
-                app:layout_constraintBottom_toTopOf="@id/place_layout"
+                app:hintTextAppearance="@style/CustomHint"
                 app:layout_constraintEnd_toStartOf="@id/end_time_layout"
                 app:layout_constraintStart_toStartOf="@id/topic_layout"
                 app:layout_constraintTop_toBottomOf="@id/date_layout"
@@ -86,6 +82,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:focusableInTouchMode="false"
+                    android:textSize="@dimen/input_text_size"
                     />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -95,6 +92,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/end_time"
                 app:errorEnabled="true"
+                app:hintTextAppearance="@style/CustomHint"
                 app:layout_constraintEnd_toEndOf="@id/topic_layout"
                 app:layout_constraintStart_toEndOf="@id/start_time_layout"
                 app:layout_constraintTop_toTopOf="@id/start_time_layout"
@@ -105,6 +103,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:focusableInTouchMode="false"
+                    android:textSize="@dimen/input_text_size"
                     />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -117,7 +116,7 @@
                 android:labelFor="@id/place_input"
                 app:endIconMode="dropdown_menu"
                 app:errorEnabled="true"
-                app:layout_constraintBottom_toTopOf="@id/list_member"
+                app:hintTextAppearance="@style/CustomHint"
                 app:layout_constraintEnd_toEndOf="@id/topic_layout"
                 app:layout_constraintStart_toStartOf="@id/topic_layout"
                 app:layout_constraintTop_toBottomOf="@id/start_time_layout"
@@ -128,17 +127,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
+                    android:textSize="@dimen/input_text_size"
                     />
             </com.google.android.material.textfield.TextInputLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list_member"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/topic_layout"
-                app:layout_constraintHeight_percent=".5"
                 app:layout_constraintStart_toStartOf="@id/topic_layout"
                 app:layout_constraintTop_toBottomOf="@id/place_layout"
                 tools:listitem="@layout/list_item_member"
@@ -151,7 +149,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="@dimen/fab_margin"
         android:text="@string/add_meeting"
+        android:textSize="@dimen/normal_text_size"
         />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

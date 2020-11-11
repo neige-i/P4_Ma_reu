@@ -1,5 +1,6 @@
 package com.neige_i.mareu.view.add;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -11,18 +12,23 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DI;
 import com.neige_i.mareu.data.DummyGenerator;
+import com.neige_i.mareu.view.add.view_model.AddViewModel;
+import com.neige_i.mareu.view.add.view_model.AddViewModelFactory;
+import com.neige_i.mareu.view.list.ListFragment;
+
+import static com.neige_i.mareu.Util.setTextWithoutFilter;
 
 public class AddFragment extends Fragment {
 
@@ -32,7 +38,7 @@ public class AddFragment extends Fragment {
         return new AddFragment();
     }
 
-    // ------------------------------------ OVERRIDDEN METHODS -------------------------------------
+    // ------------------------------------- FRAGMENT METHODS --------------------------------------
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,48 +52,46 @@ public class AddFragment extends Fragment {
         // Init ViewModel
         final AddViewModel viewModel = new ViewModelProvider(
             requireActivity(),
-            AddViewModelFactory.getInstance(requireActivity().getApplication())
+            AddViewModelFactory.getInstance()
         ).get(AddViewModel.class);
 
         // Init views
         final TextInputEditText topicInput = configTopic(viewModel);
+        final TextInputEditText dateInput = configDate(viewModel);
         final TextInputEditText startTimeInput = configStartTime(viewModel);
         final TextInputEditText endTimeInput = configEndTime(viewModel);
-        final TextInputEditText dateInput = configDate(viewModel);
         final AutoCompleteTextView placeInput = configPlace(viewModel);
-        final MemberAdapter memberAdapter = configMemberList(viewModel);
+        final MemberUiAdapter memberUiAdapter = configMemberList(viewModel);
         configButton(viewModel);
         final TextInputLayout topicLayout = requireView().findViewById(R.id.topic_layout);
+        final TextInputLayout dateLayout = requireView().findViewById(R.id.date_layout);
         final TextInputLayout startTimeLayout = requireView().findViewById(R.id.start_time_layout);
         final TextInputLayout endTimeLayout = requireView().findViewById(R.id.end_time_layout);
-        final TextInputLayout dateLayout = requireView().findViewById(R.id.date_layout);
         final TextInputLayout placeLayout = requireView().findViewById(R.id.place_layout);
 
         // Update UI when 'state' LiveData is changed
-        viewModel.getMeetingUiModel().observe(getViewLifecycleOwner(), meetingUi -> {
-//            Log.d("Neige", "AddFragment::onViewCreated:observeUiModel");
-            if (topicInput.getText() != null && !topicInput.getText().toString().equals(meetingUi.getTopic()))
-                topicInput.setText(meetingUi.getTopic());
-            startTimeInput.setText(meetingUi.getStartTime());
-            endTimeInput.setText(meetingUi.getEndTime());
-            dateInput.setText(meetingUi.getDate());
-            placeInput.setText(meetingUi.getPlace(), false);
-            memberAdapter.submitList(meetingUi.getMemberList());
-            topicLayout.setError(meetingUi.getTopicError());
-            startTimeLayout.setError(meetingUi.getStartTimeError());
-            endTimeLayout.setError(meetingUi.getEndTimeError());
-            dateLayout.setError(meetingUi.getDateError());
-            placeLayout.setError(meetingUi.getPlaceError());
+        viewModel.getMeetingUiModel().observe(getViewLifecycleOwner(), meetingUiModel -> {
+            if (topicInput.getText() != null && !topicInput.getText().toString().equals(meetingUiModel.getTopic()))
+                topicInput.setText(meetingUiModel.getTopic());
+            dateInput.setText(meetingUiModel.getDate());
+            startTimeInput.setText(meetingUiModel.getStartTime());
+            endTimeInput.setText(meetingUiModel.getEndTime());
+            setTextWithoutFilter(placeInput, meetingUiModel.getPlace());
+            memberUiAdapter.submitList(meetingUiModel.getMemberList());
+            topicLayout.setError(meetingUiModel.getTopicError(requireActivity().getApplication()));
+            dateLayout.setError(meetingUiModel.getDateError(requireActivity().getApplication()));
+            startTimeLayout.setError(meetingUiModel.getStartTimeError(requireActivity().getApplication()));
+            endTimeLayout.setError(meetingUiModel.getEndTimeError(requireActivity().getApplication()));
+            placeLayout.setError(meetingUiModel.getPlaceError(requireActivity().getApplication()));
         });
 
         // Update UI when 'event' LiveData is triggered
         showDatePicker(viewModel);
         showTimePicker(viewModel);
-        showSnackbar(viewModel);
         endActivity(viewModel);
     }
 
-    // -------------------------------------- FIELDS METHODS ---------------------------------------
+    // --------------------------------------- TOPIC METHODS ---------------------------------------
 
     @NonNull
     private TextInputEditText configTopic(@NonNull AddViewModel viewModel) {
@@ -109,19 +113,7 @@ public class AddFragment extends Fragment {
         return topic;
     }
 
-    @NonNull
-    private TextInputEditText configStartTime(@NonNull AddViewModel viewModel) {
-        final TextInputEditText timeInput = requireView().findViewById(R.id.start_time_input);
-        timeInput.setOnClickListener(input -> viewModel.showTimePickerDialog(timeInput.getId()));
-        return timeInput;
-    }
-
-    @NonNull
-    private TextInputEditText configEndTime(@NonNull AddViewModel viewModel) {
-        final TextInputEditText timeInput = requireView().findViewById(R.id.end_time_input);
-        timeInput.setOnClickListener(input -> viewModel.showTimePickerDialog(timeInput.getId()));
-        return timeInput;
-    }
+    // ------------------------------------- DATE/TIME METHODS -------------------------------------
 
     @NonNull
     private TextInputEditText configDate(@NonNull AddViewModel viewModel) {
@@ -129,6 +121,24 @@ public class AddFragment extends Fragment {
         dateInput.setOnClickListener(input -> viewModel.showDatePickerDialog());
         return dateInput;
     }
+
+    @NonNull
+    private TextInputEditText configStartTime(@NonNull AddViewModel viewModel) {
+        return configTime(viewModel, R.id.start_time_input);
+    }
+
+    @NonNull
+    private TextInputEditText configEndTime(@NonNull AddViewModel viewModel) {
+        return configTime(viewModel, R.id.end_time_input);
+    }
+
+    private TextInputEditText configTime(@NonNull AddViewModel viewModel, @IdRes int inputId) {
+        final TextInputEditText timeInput = requireView().findViewById(inputId);
+        timeInput.setOnClickListener(input -> viewModel.showTimePickerDialog(inputId));
+        return timeInput;
+    }
+
+    // --------------------------------------- PLACE METHODS ---------------------------------------
 
     @NonNull
     private AutoCompleteTextView configPlace(@NonNull AddViewModel viewModel) {
@@ -143,9 +153,11 @@ public class AddFragment extends Fragment {
         return placeInput;
     }
 
+    // ------------------------------------ MEMBER LIST METHODS ------------------------------------
+
     @NonNull
-    private MemberAdapter configMemberList(@NonNull AddViewModel viewModel) {
-        final MemberAdapter memberAdapter = new MemberAdapter(new MemberAdapter.OnMemberChangedListener() {
+    private MemberUiAdapter configMemberList(@NonNull AddViewModel viewModel) {
+        final MemberUiAdapter memberUiAdapter = new MemberUiAdapter(new MemberUiAdapter.OnMemberChangedListener() {
             @Override
             public void onAddMember(int position) {
                 viewModel.addMember(position);
@@ -157,18 +169,14 @@ public class AddFragment extends Fragment {
             }
 
             @Override
-//            public void onRemoveMember(@NonNull MemberUiModel memberUi) {
             public void onRemoveMember(int position) {
                 viewModel.removeMember(position);
             }
         });
-        final RecyclerView recyclerView = requireView().findViewById(R.id.list_member);
-        recyclerView.setAdapter(memberAdapter);
-//        viewModel.getMemberToShow().observe(getViewLifecycleOwner(), position -> {
-//            assert recyclerView.getLayoutManager() != null; // Defined in XML
-//            recyclerView.getLayoutManager().scrollToPosition(position); // TODO: auto scroll
-//        });
-        return memberAdapter;
+        RecyclerView recyclerView = requireView().findViewById(R.id.list_member);
+        recyclerView.setItemAnimator(null); // remove RecyclerView animations for UI tests
+        recyclerView.setAdapter(memberUiAdapter);
+        return memberUiAdapter;
     }
 
     // ---------------------------------------- FAB METHODS ----------------------------------------
@@ -180,12 +188,10 @@ public class AddFragment extends Fragment {
     // ------------------------------------- UI EVENT METHODS --------------------------------------
 
     private void showDatePicker(@NonNull AddViewModel viewModel) {
-        // Caution with month value range!
-        // LocalDate (java.time) returns a month between 1 and 12 whereas Calendar between 0 and 11
         viewModel.getDatePickerEvent().observe(getViewLifecycleOwner(), localDate -> {
             final DatePickerDialog datePickerDialog = new DatePickerDialog(
                 requireContext(),
-                (view1, year, month, dayOfMonth) -> viewModel.setDate(year, month + 1, dayOfMonth),
+                (view, year, month, dayOfMonth) -> viewModel.setDate(year, month + 1, dayOfMonth),
                 localDate.getYear(),
                 localDate.getMonthValue() - 1,
                 localDate.getDayOfMonth()
@@ -200,7 +206,7 @@ public class AddFragment extends Fragment {
             getViewLifecycleOwner(),
             localTime -> new TimePickerDialog(
                 requireContext(),
-                (view1, hourOfDay, minute) -> viewModel.setTime(hourOfDay, minute),
+                (view, hourOfDay, minute) -> viewModel.setTime(hourOfDay, minute),
                 localTime.getHour(),
                 localTime.getMinute(),
                 true
@@ -208,12 +214,13 @@ public class AddFragment extends Fragment {
         );
     }
 
-    private void showSnackbar(@NonNull AddViewModel viewModel) {
-        viewModel.getShowSnackEvent().observe(getViewLifecycleOwner(), errorMessageId ->
-            Snackbar.make(requireView(), errorMessageId, Snackbar.LENGTH_LONG).show());
-    }
-
     private void endActivity(@NonNull AddViewModel viewModel) {
-        viewModel.getEndActivityEvent().observe(getViewLifecycleOwner(), aVoid -> requireActivity().finish());
+        viewModel.getEndActivityEvent().observe(getViewLifecycleOwner(), meeting -> {
+            requireActivity().setResult(
+                Activity.RESULT_OK,
+                requireActivity().getIntent().putExtra(ListFragment.MEETING, meeting)
+            );
+            requireActivity().finish();
+        });
     }
 }

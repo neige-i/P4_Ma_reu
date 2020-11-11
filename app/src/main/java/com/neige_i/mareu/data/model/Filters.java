@@ -7,50 +7,73 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+/**
+ * Store all the filters that can be applied to the meeting list.
+ */
 public class Filters {
 
     // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
+    /**
+     * Filter to only keep meetings that are held from this date.
+     */
     @Nullable
-    private final LocalDate fromDate;
+    private LocalDate fromDate;
+    /**
+     * Filter to only keep meetings that are held until this date.
+     */
     @Nullable
-    private final LocalDate untilDate;
+    private LocalDate untilDate;
+    /**
+     * Filter to only keep meetings that are held from this time.
+     */
     @Nullable
-    private final LocalTime fromTime;
+    private LocalTime fromTime;
+    /**
+     * Filter to only keep meetings that are held until this time.
+     */
     @Nullable
-    private final LocalTime untilTime;
+    private LocalTime untilTime;
+    /**
+     * Filter to only keep meetings that are held in these places.
+     */
     @NonNull
     private final List<String> places;
+    /**
+     * Filter to only keep meetings that contain these members.
+     */
     @NonNull
-    private final List<String> members;
+    private final List<String> emails;
 
-    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
+    // ------------------------------- CONSTRUCTOR & GETTERS/SETTERS -------------------------------
 
     public Filters() {
-        fromDate = null;
-        untilDate = null;
-        fromTime = null;
-        untilTime = null;
         places = new ArrayList<>();
-        members = new ArrayList<>();
+        emails = new ArrayList<>();
     }
 
-    public Filters(@Nullable LocalDate fromDate, @Nullable LocalDate untilDate,
-                   @Nullable LocalTime fromTime, @Nullable LocalTime untilTime,
-                   @NonNull List<String> places, @NonNull List<String> members
+    public Filters(@Nullable LocalDate fromDate, @Nullable LocalDate untilDate, @Nullable LocalTime fromTime,
+                   @Nullable LocalTime untilTime, @NonNull List<String> places, @NonNull List<String> emails
     ) {
         this.fromDate = fromDate;
         this.untilDate = untilDate;
         this.fromTime = fromTime;
         this.untilTime = untilTime;
         this.places = places;
-        this.members = members;
+        this.emails = emails;
     }
+
+    // -------------------------------------- GETTERS/SETTERS --------------------------------------
 
     @Nullable
     public LocalDate getFromDate() {
         return fromDate;
+    }
+
+    public void setFromDate(@Nullable LocalDate fromDate) {
+        this.fromDate = fromDate;
     }
 
     @Nullable
@@ -58,14 +81,26 @@ public class Filters {
         return untilDate;
     }
 
+    public void setUntilDate(@Nullable LocalDate untilDate) {
+        this.untilDate = untilDate;
+    }
+
     @Nullable
     public LocalTime getFromTime() {
         return fromTime;
     }
 
+    public void setFromTime(@Nullable LocalTime fromTime) {
+        this.fromTime = fromTime;
+    }
+
     @Nullable
     public LocalTime getUntilTime() {
         return untilTime;
+    }
+
+    public void setUntilTime(@Nullable LocalTime untilTime) {
+        this.untilTime = untilTime;
     }
 
     @NonNull
@@ -74,68 +109,33 @@ public class Filters {
     }
 
     @NonNull
-    public List<String> getMembers() {
-        return members;
+    public List<String> getEmails() {
+        return emails;
     }
 
-    // --------------------------------------- BUILDER CLASS ---------------------------------------
+    // -------------------------------------- OBJECT METHODS ---------------------------------------
 
-    public static class Builder {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Filters filters = (Filters) o;
+        return Objects.equals(fromDate, filters.fromDate) &&
+            Objects.equals(untilDate, filters.untilDate) &&
+            Objects.equals(fromTime, filters.fromTime) &&
+            Objects.equals(untilTime, filters.untilTime) &&
+            places.equals(filters.places) &&
+            emails.equals(filters.emails);
+    }
 
-        @Nullable
-        private LocalDate fromDate;
-        @Nullable
-        private LocalDate untilDate;
-        @Nullable
-        private LocalTime fromTime;
-        @Nullable
-        private LocalTime untilTime;
-        @NonNull
-        private List<String> places;
-        @NonNull
-        private List<String> members;
-
-        public Builder(@NonNull Filters filters) {
-            fromDate = filters.fromDate;
-            untilDate = filters.untilDate;
-            fromTime = filters.fromTime;
-            untilTime = filters.untilTime;
-            places = filters.places;
-            members = filters.members;
-        }
-
-        public Builder setFromDate(LocalDate fromDate) {
-            this.fromDate = fromDate;
-            return this;
-        }
-
-        public Builder setUntilDate(LocalDate untilDate) {
-            this.untilDate = untilDate;
-            return this;
-        }
-
-        public Builder setFromTime(LocalTime fromTime) {
-            this.fromTime = fromTime;
-            return this;
-        }
-
-        public Builder setUntilTime(LocalTime untilTime) {
-            this.untilTime = untilTime;
-            return this;
-        }
-
-        public Builder setPlaces(List<String> places) {
-            this.places = places;
-            return this;
-        }
-
-        public Builder setMembers(List<String> members) {
-            this.members = members;
-            return this;
-        }
-
-        public Filters build() {
-            return new Filters(fromDate, untilDate, fromTime, untilTime, places, members);
-        }
+    @NonNull
+    @Override
+    public String toString() {
+        return "Filters{" +
+            fromDate + " -> " + untilDate + ", " +
+            fromTime + " -> " + untilTime +
+            ", " + places +
+            ", " + emails +
+            '}';
     }
 }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.model.Meeting;
+import com.neige_i.mareu.data.model.Member;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,7 +15,7 @@ import java.util.List;
 public abstract class DummyGenerator {
 
     @NonNull
-    public static List<String> PLACES = Arrays.asList(
+    public static final List<String> PLACES = Arrays.asList(
         "Mario",
         "Luigi",
         "Peach",
@@ -28,7 +29,7 @@ public abstract class DummyGenerator {
     );
 
     @NonNull
-    public static List<Integer> LOGOS = Arrays.asList(
+    public static final List<Integer> LOGOS = Arrays.asList(
         R.mipmap.ic_logo_mario,
         R.mipmap.ic_logo_luigi,
         R.mipmap.ic_logo_peach,
@@ -42,21 +43,21 @@ public abstract class DummyGenerator {
     );
 
     @NonNull
-    public static List<Integer> CHECKABLE_LOGOS = Arrays.asList(
-        R.drawable.ic_mario,
-        R.drawable.ic_luigi,
-        R.drawable.ic_peach,
-        R.drawable.ic_toad,
-        R.drawable.ic_yoshi,
-        R.drawable.ic_donkey_kong,
-        R.drawable.ic_bowser,
-        R.drawable.ic_wario,
-        R.drawable.ic_waluigi,
-        R.drawable.ic_king_boo
+    public static final List<Integer> CHECKABLE_LOGOS = Arrays.asList(
+        R.drawable.ic_place_mario,
+        R.drawable.ic_place_luigi,
+        R.drawable.ic_place_peach,
+        R.drawable.ic_place_toad,
+        R.drawable.ic_place_yoshi,
+        R.drawable.ic_place_donkey_kong,
+        R.drawable.ic_place_bowser,
+        R.drawable.ic_place_wario,
+        R.drawable.ic_place_waluigi,
+        R.drawable.ic_place_king_boo
     );
 
     @NonNull
-    public static List<String> EMAILS = Arrays.asList(
+    public static final List<String> EMAILS = Arrays.asList(
         "maxime@lamzone.com",
         "alex@lamzone.com",
         "paul@lamzone.com",
@@ -68,18 +69,17 @@ public abstract class DummyGenerator {
     );
 
     @NonNull
-    public static List<String> getNames() {
-        final List<String> nameList = new ArrayList<>();
-        for (String email : EMAILS)
-            nameList.add(email.substring(0, email.indexOf("@")));
-        return nameList;
-    }
-
-    @NonNull
     public static List<Meeting> generateMeetings() {
-        final LocalDate date = LocalDate.of(2020, 11, 1);
+        DI.setMemberId(0);
+        final LocalDate date = LocalDate.of(2020, 11, 6);
         final LocalTime startTime = LocalTime.of(8, 0);
         final LocalTime endTime = LocalTime.of(9, 0);
+        final List<Member> dummyMembers = new ArrayList<>();
+        for (String email : EMAILS) {
+            final Member member = new Member();
+            member.setEmail(email);
+            dummyMembers.add(member);
+        }
 
         return Arrays.asList(
             new Meeting(
@@ -88,7 +88,7 @@ public abstract class DummyGenerator {
                 startTime,
                 endTime,
                 PLACES.get(0),
-                EMAILS.subList(0, 2)
+                dummyMembers.subList(0, 2)
             ),
             new Meeting(
                 "Meeting B",
@@ -96,7 +96,7 @@ public abstract class DummyGenerator {
                 startTime.plusHours(2),
                 endTime.plusHours(4),
                 PLACES.get(1),
-                EMAILS.subList(5, 7)
+                dummyMembers.subList(5, 7)
             ),
             new Meeting(
                 "Meeting C",
@@ -104,7 +104,7 @@ public abstract class DummyGenerator {
                 startTime.plusHours(3),
                 endTime.plusHours(3).plusMinutes(30),
                 PLACES.get(2),
-                EMAILS.subList(7, 8)
+                dummyMembers.subList(7, 8)
             ),
             new Meeting(
                 "Meeting D",
@@ -112,7 +112,7 @@ public abstract class DummyGenerator {
                 startTime.plusHours(6).plusMinutes(45),
                 endTime.plusHours(7).plusMinutes(10),
                 PLACES.get(3),
-                EMAILS.subList(3, 6)
+                dummyMembers.subList(3, 6)
             ),
             new Meeting(
                 "Meeting E",
@@ -120,7 +120,7 @@ public abstract class DummyGenerator {
                 startTime.plusMinutes(20),
                 endTime.plusHours(5),
                 PLACES.get(4),
-                EMAILS.subList(4, 7)
+                dummyMembers.subList(4, 7)
             ),
             new Meeting(
                 "Meeting F",
@@ -128,7 +128,7 @@ public abstract class DummyGenerator {
                 startTime.plusHours(5).plusMinutes(15),
                 endTime.plusHours(7).plusMinutes(55),
                 PLACES.get(6),
-                EMAILS.subList(2, 6)
+                dummyMembers.subList(2, 6)
             )
         );
     }

@@ -1,7 +1,6 @@
-package com.neige_i.mareu.data;
+package com.neige_i.mareu.data.repository;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 
 import com.neige_i.mareu.data.model.Meeting;
@@ -10,7 +9,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+/**
+ * Handles all the operations about the meeting to add.
+ */
 public interface MeetingRepository {
+
+    // -------------------------------------- GENERAL METHODS --------------------------------------
 
     void initRepository();
 
@@ -33,8 +37,9 @@ public interface MeetingRepository {
 
     void updateMember(int position, @NonNull String member);
 
-//    void removeMember(@NonNull String member);
     void removeMember(int position);
+
+    void triggerRequiredErrors();
 
     // --------------------------------- AVAILABLE MEMBERS METHODS ---------------------------------
 

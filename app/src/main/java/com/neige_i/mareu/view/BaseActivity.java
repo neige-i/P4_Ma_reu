@@ -1,16 +1,20 @@
 package com.neige_i.mareu.view;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.neige_i.mareu.R;
+import com.neige_i.mareu.data.DI;
 
+// TIPS: Abstract Activity to describe a general behaviour that will be shared to child classes
 public abstract class BaseActivity extends AppCompatActivity {
 
-    // ------------------------------------ OVERRIDDEN METHODS -------------------------------------
+    // ------------------------------------- ACTIVITY METHODS --------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +28,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         setTitle(getTitleId());
 
         // Config fragment
-        getSupportFragmentManager().beginTransaction()
-            .replace(R.id.container, getFragment())
-            .commitNow();
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, getFragment()).commitNow();
     }
 
     @Override
@@ -36,6 +38,15 @@ public abstract class BaseActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Reset repositories when configuration changes (orientation|screenSize)
+        DI.getListingRepository().initRepository();
+        DI.getMeetingRepository().initRepository();
     }
 
     // ------------------------------------- ABSTRACT METHODS --------------------------------------

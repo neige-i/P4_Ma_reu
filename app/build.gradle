@@ -43,8 +43,9 @@ android {
 dependencies {
     def lifecycle_version = "2.2.0"
     def arch_version = "2.1.0"
+    def fragment_version = "1.3.0-beta01"
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.10' // java.time
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.0' // java.time
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
@@ -52,6 +53,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
+    implementation "androidx.fragment:fragment:$fragment_version" // Activity Result API
     implementation 'com.google.android.material:material:1.2.1'
 
     testImplementation 'junit:junit:4.13'

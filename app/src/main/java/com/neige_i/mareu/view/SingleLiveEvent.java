@@ -1,4 +1,4 @@
-package com.neige_i.mareu.view.util;
+package com.neige_i.mareu.view;
 
 import android.util.Log;
 

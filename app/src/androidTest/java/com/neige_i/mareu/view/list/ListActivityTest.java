@@ -1,10 +1,8 @@
 package com.neige_i.mareu.view.list;
 
-import android.view.View;
 import android.widget.DatePicker;
+import android.widget.TimePicker;
 
-import androidx.test.espresso.UiController;
-import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.PickerActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -12,7 +10,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.view.add.AddActivity;
 
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,18 +17,25 @@ import org.junit.runner.RunWith;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.longClick;
+import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.intent.Intents.init;
 import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
-import static androidx.test.espresso.matcher.ViewMatchers.hasChildCount;
+import static androidx.test.espresso.matcher.RootMatchers.isPlatformPopup;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static com.neige_i.mareu.util.ClickViewAction.clickOnView;
+import static com.neige_i.mareu.util.RecyclerViewItemCountAssertion.withItemCount;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
@@ -49,25 +53,27 @@ public class ListActivityTest {
     @Test
     public void onActivityStarted_checkInitialState() {
         // Given: initial state
+
         // When: nothing
-        // Then: list is empty
-        onView(withId(R.id.list_meeting)).check(matches(hasChildCount(0)));
+
+        // Then: the meeting list is empty
+        onView(withId(R.id.list_meeting)).check(withItemCount(0));
     }
 
     @Test
     public void onMenuItemClicked_showOrHideLayout() {
         // Given: initial state
 
-        // When: click on filter item menu
+        // When: click on the filter item menu
         onView(withId(R.id.filter)).perform(click());
 
-        // Then: filter layout is displayed
+        // Then: the filter layout is displayed
         onView(withId(R.id.filter_drawer)).check(matches(isDisplayed()));
 
-        // When: click on filter item menu again
+        // When: click on the filter item menu again
         onView(withId(R.id.filter)).perform(click());
 
-        // Then: filter layout is hidden
+        // Then: the filter layout is hidden
         onView(withId(R.id.filter_drawer)).check(matches(not(isDisplayed())));
     }
 
@@ -75,7 +81,7 @@ public class ListActivityTest {
     public void onAddButtonClicked_startActivity() {
         // Given: initial state
 
-        // When: click on 'add' button
+        // When: click on the 'add' button
         onView(withId(R.id.add_meeting)).perform(click());
 
         // Then: AddActivity is started
@@ -86,11 +92,11 @@ public class ListActivityTest {
     public void onAddButtonLongClicked_showItems() {
         // Given: initial state
 
-        // When: long click on 'add' button
+        // When: long click on the 'add' button
         onView(withId(R.id.add_meeting)).perform(longClick());
 
-        // Then: list contains the 6 dummy meetings
-        onView(withId(R.id.list_meeting)).check(matches(hasChildCount(6)));
+        // Then: the list contains the 6 dummy meetings
+        onView(withId(R.id.list_meeting)).check(withItemCount(6));
     }
 
     @Test
@@ -98,13 +104,12 @@ public class ListActivityTest {
         // Given: add 6 dummy meetings
         onView(withId(R.id.add_meeting)).perform(longClick());
 
-        // When: click on 'remove' button of the first meeting
-        // ASKME: perform click twice
-        onView(withId(R.id.list_meeting)).perform(actionOnItemAtPosition(0, deleteMeeting())).perform(click());
-
-        // Then: list does not contain 'Meeting A' anymore (which is the first meeting's topic)
         onView(withId(R.id.list_meeting))
-            .check(matches(hasChildCount(5)))
+            // When: click on the 'remove' button of the first meeting
+            .perform(actionOnItemAtPosition(0, clickOnView(R.id.delete_meeting)))
+
+            // Then: the list does not contain 'Meeting A' anymore (which is the topic of the 1st meeting
+            .check(withItemCount(5))
             .check(matches(not(hasDescendant(withText("Meeting A")))));
     }
 
@@ -116,12 +121,12 @@ public class ListActivityTest {
 
         // When: click on the start date filter, select a date and validate
         onView(withId(R.id.start_date_filter_input)).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 10, 19));
+        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 11, 9));
         onView(withId(android.R.id.button1)).perform(click());
 
-        // Then: list only contains 'Meeting E' & 'Meeting F' which date are from 19/10/2020
+        // Then: list only contains 'Meeting E' & 'Meeting F' which date are from 19/11/2020
         onView(withId(R.id.list_meeting))
-            .check(matches(hasChildCount(2)))
+            .check(withItemCount(2))
             .check(matches(not(hasDescendant(withText("Meeting A")))))
             .check(matches(not(hasDescendant(withText("Meeting B")))))
             .check(matches(not(hasDescendant(withText("Meeting C")))))
@@ -138,12 +143,12 @@ public class ListActivityTest {
 
         // When: click on the end date filter, select a date and validate
         onView(withId(R.id.end_date_filter_input)).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 10, 17));
+        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 11, 7));
         onView(withId(android.R.id.button1)).perform(click());
 
-        // Then: list does not contain 'Meeting E' & 'Meeting F' which dates are after 17/10/2020
+        // Then: the list does not contain 'Meeting E' & 'Meeting F' which dates are after 07/11/2020
         onView(withId(R.id.list_meeting))
-            .check(matches(hasChildCount(4)))
+            .check(withItemCount(4))
             .check(matches(hasDescendant(withText("Meeting A"))))
             .check(matches(hasDescendant(withText("Meeting B"))))
             .check(matches(hasDescendant(withText("Meeting C"))))
@@ -158,11 +163,18 @@ public class ListActivityTest {
         onView(withId(R.id.add_meeting)).perform(longClick());
         onView(withId(R.id.filter)).perform(click());
         onView(withId(R.id.start_date_filter_input)).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 10, 17));
+        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 11, 12));
         onView(withId(android.R.id.button1)).perform(click());
 
-        // When: click on 'clear' of the start date filter
-        onView(withId(R.id.start_date_filter_layout)).perform(clickEndIcon());
+        // When: click on 'clear' icon of the start date filter
+        onView(allOf(
+            withId(R.id.text_input_end_icon),
+            isDescendantOfA(withId(R.id.start_date_filter_layout)),
+            withContentDescription("Clear text"))
+        ).perform(click());
+
+        // Then: list contains all 6 dummy meetings again
+        onView(withId(R.id.list_meeting)).check(withItemCount(6));
     }
 
     @Test
@@ -172,69 +184,56 @@ public class ListActivityTest {
         onView(withId(R.id.filter)).perform(click());
 
         // When: click on the 2nd place filter (which corresponds to the Luigi place)
-        // ASKME: apparently selects 2 places
-        onView(withId(R.id.place_list)).perform(actionOnItemAtPosition(1, selectPlace())).perform(click());
+        onView(withId(R.id.place_list)).perform(actionOnItemAtPosition(1, clickOnView(R.id.place_button)));
 
-        // Then: list only contains 'Meeting B' which place is Luigi
+        // Then: list only contains 'Meeting B' which is held in Luigi's place
         onView(withId(R.id.list_meeting))
-            .check(matches(hasChildCount(1)))
+            .check(withItemCount(1))
             .check(matches(hasDescendant(withText("Meeting B"))));
     }
 
-    private ViewAction deleteMeeting() {
-        return new ViewAction() {
-            @Override
-            public Matcher<View> getConstraints() {
-                return null;
-            }
+    @Test
+    public void onSelectMemberFilter_showOnlyMeeting() {
+        // Given: add 6 dummy meetings and open filter layout
+        onView(withId(R.id.add_meeting)).perform(longClick());
+        onView(withId(R.id.filter)).perform(click());
 
-            @Override
-            public String getDescription() {
-                return null;
-            }
+        // When: click on the 8th member filter (which corresponds to alexandra)
+        onView(withId(R.id.member_list)).perform(actionOnItemAtPosition(7, clickOnView(R.id.member_button)));
 
-            @Override
-            public void perform(UiController uiController, View view) {
-                view.findViewById(R.id.delete_meeting).performClick();
-            }
-        };
+        // Then: list only contains 'Meeting C' which has alexandra as member
+        onView(withId(R.id.list_meeting))
+            .check(withItemCount(1))
+            .check(matches(hasDescendant(withText("Meeting C"))));
     }
 
-    private ViewAction clickEndIcon() {
-        return new ViewAction() {
-            @Override
-            public Matcher<View> getConstraints() {
-                return null;
-            }
+    @Test
+    public void onAddCorrectMember_endActivityAndUpdateList() {
+        // Given: initial state
 
-            @Override
-            public String getDescription() {
-                return null;
-            }
+        // When: open AddActivity, fill all the fields and click on the 'add' button
+        onView(withId(R.id.add_meeting)).perform(click());
+        onView(withId(R.id.topic_input)).perform(typeText("new topic"), closeSoftKeyboard());
+        onView(withId(R.id.date_input)).perform(click());
+        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 11, 7));
+        onView(withId(android.R.id.button1)).perform(click());
+        onView(withId(R.id.start_time_input)).perform(click());
+        onView(withClassName(equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(13, 0));
+        onView(withId(android.R.id.button1)).perform(click());
+        onView(withId(R.id.end_time_input)).perform(click());
+        onView(withClassName(equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(14, 30));
+        onView(withId(android.R.id.button1)).perform(click());
+        onView(withId(R.id.place_input)).perform(click());
+        onView(withText("Mario")).inRoot(isPlatformPopup()).perform(click());
+        onView(withId(R.id.email_input)).perform(click());
+        onView(withText("maxime@lamzone.com")).inRoot(isPlatformPopup()).perform(click());
+        onView(withId(R.id.add_button)).perform(click());
 
-            @Override
-            public void perform(UiController uiController, View view) {
-                view.findViewById(R.id.text_input_end_icon).performClick();
-            }
-        };
-    }
-
-    private ViewAction selectPlace() {
-        return new ViewAction() {
-            @Override
-            public Matcher<View> getConstraints() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return null;
-            }
-
-            @Override
-            public void perform(UiController uiController, View view) {
-                view.findViewById(R.id.place_button).performClick();
-            }
-        };
+        // Then: the meeting is added to the list
+        onView(withId(R.id.list_meeting))
+            .check(withItemCount(1))
+            .check(matches(hasDescendant(withText("new topic"))))
+            .check(matches(hasDescendant(withText("11/07/2020 - 13:00 - 14:30"))))
+            .check(matches(hasDescendant(withText("maxime"))));
     }
 }

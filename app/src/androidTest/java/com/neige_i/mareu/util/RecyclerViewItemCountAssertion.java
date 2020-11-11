@@ -7,8 +7,9 @@ import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.ViewAssertion;
 
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class RecyclerViewItemCountAssertion implements ViewAssertion {
     private final Matcher<Integer> matcher;
@@ -18,7 +19,7 @@ public class RecyclerViewItemCountAssertion implements ViewAssertion {
     }
 
     public static RecyclerViewItemCountAssertion withItemCount(int expectedCount) {
-        return withItemCount(Matchers.is(expectedCount));
+        return withItemCount(is(expectedCount));
     }
 
     public static RecyclerViewItemCountAssertion withItemCount(Matcher<Integer> matcher) {
@@ -27,9 +28,9 @@ public class RecyclerViewItemCountAssertion implements ViewAssertion {
 
     @Override
     public void check(View view, NoMatchingViewException noViewFoundException) {
-        if (noViewFoundException != null) {
+        if (noViewFoundException != null)
             throw noViewFoundException;
-        }
-        Assert.assertThat(((RecyclerView) view).getAdapter().getItemCount(), matcher);
+
+        assertThat(((RecyclerView) view).getAdapter().getItemCount(), matcher);
     }
 }

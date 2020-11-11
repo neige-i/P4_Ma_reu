@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.motion.widget.MotionLayout;
@@ -25,8 +27,16 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DummyGenerator;
 import com.neige_i.mareu.view.add.AddActivity;
+import com.neige_i.mareu.view.list.view_model.ListViewModel;
+import com.neige_i.mareu.view.list.view_model.ListViewModelFactory;
+
+import static com.neige_i.mareu.Util.getNames;
 
 public class ListFragment extends Fragment {
+
+    // -------------------------------- INTENT EXTRA KEY VARIABLES ---------------------------------
+
+    public static final String MEETING = "MEETING_EXTRA";
 
     // -------------------------------------- LOCAL VARIABLES --------------------------------------
 
@@ -38,7 +48,7 @@ public class ListFragment extends Fragment {
         return new ListFragment();
     }
 
-    // ------------------------------------ OVERRIDDEN METHODS -------------------------------------
+    // ------------------------------------- FRAGMENT METHODS --------------------------------------
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,34 +67,42 @@ public class ListFragment extends Fragment {
             ListViewModelFactory.getInstance()
         ).get(ListViewModel.class);
 
+        // Init ActivityResultLauncher
+        final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                final Intent data = result.getData();
+                // If AddActivity is finished by clicking the up or back button, data is null
+                if (data != null)
+                    viewModel.addMeeting(data.getParcelableExtra(MEETING));
+            });
+
         // Init views
-        final MeetingAdapter adapter = configRecyclerView(viewModel);
-        final TextView noMeetingTxt = requireView().findViewById(R.id.no_meeting);
-        final TextInputEditText startDateInput = configStartDateInput(viewModel);
-        final TextInputEditText endDateInput = configEndDateInput(viewModel);
-        final TextInputEditText startTimeInput = configStartTimeInput(viewModel);
-        final TextInputEditText endTimeInput = configEndTimeInput(viewModel);
-        configDateAndTimeLayouts(viewModel);
-        configPlace(viewModel);
-        configMember(viewModel);
-        configFab(viewModel);
+        final MeetingUiAdapter adapter = configRecyclerView();
+        final TextView noMeetingText = requireView().findViewById(R.id.no_meeting);
+        final TextInputEditText startDateInput = configStartDateInput();
+        final TextInputEditText endDateInput = configEndDateInput();
+        final TextInputEditText startTimeInput = configStartTimeInput();
+        final TextInputEditText endTimeInput = configEndTimeInput();
+        configDateAndTimeLayouts();
+        configPlace();
+        configMember();
+        configFab(launcher);
         final MotionLayout motionLayout = requireView().findViewById(R.id.motion_layout);
 
         // Update UI when 'state' LiveData is changed
-        viewModel.getListUiModel().observe(getViewLifecycleOwner(), listUi -> {
-            adapter.submitList(listUi.getMeetingList());
-            noMeetingTxt.setVisibility(listUi.getTextViewVisibility());
-            // FIXME: problem with TextView visibility
-            startDateInput.setText(listUi.getStartDate());
-            endDateInput.setText(listUi.getEndDate());
-            startTimeInput.setText(listUi.getStartTime());
-            endTimeInput.setText(listUi.getEndTime());
-            motionLayout.transitionToState(listUi.getDrawerState());
+        viewModel.getUiState().observe(getViewLifecycleOwner(), listUiModel -> {
+            adapter.submitList(listUiModel.getMeetingList());
+            noMeetingText.setVisibility(listUiModel.getTextVisibility());
+            startDateInput.setText(listUiModel.getFromDate());
+            endDateInput.setText(listUiModel.getUntilDate());
+            startTimeInput.setText(listUiModel.getFromTime());
+            endTimeInput.setText(listUiModel.getUntilTime());
         });
+        viewModel.getDrawerLayoutState().observe(getViewLifecycleOwner(), motionLayout::transitionToState);
 
         // Update UI when 'event' LiveData is triggered
-        showDatePicker(viewModel);
-        showTimePicker(viewModel);
+        showDatePicker();
+        showTimePicker();
     }
 
     @Override
@@ -96,7 +114,7 @@ public class ListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.filter) {
-            viewModel.toggleFilterLayoutVisibility();
+            viewModel.toggleDrawerLayoutVisibility();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -105,39 +123,41 @@ public class ListFragment extends Fragment {
     // ----------------------------------- RECYCLER VIEW METHODS -----------------------------------
 
     @NonNull
-    private MeetingAdapter configRecyclerView(@NonNull ListViewModel viewModel) {
-        final MeetingAdapter meetingAdapter = new MeetingAdapter(viewModel::removeMeeting);
-        ((RecyclerView) requireView().findViewById(R.id.list_meeting)).setAdapter(meetingAdapter);
-        return meetingAdapter;
+    private MeetingUiAdapter configRecyclerView() {
+        final MeetingUiAdapter meetingUiAdapter = new MeetingUiAdapter(viewModel::removeMeeting);
+        final RecyclerView recyclerView = requireView().findViewById(R.id.list_meeting);
+        recyclerView.setItemAnimator(null); // remove RecyclerView animations for UI tests
+        recyclerView.setAdapter(meetingUiAdapter);
+        return meetingUiAdapter;
     }
 
     // -------------------------------- DATE & TIME FILTER METHODS ---------------------------------
 
-    private TextInputEditText configStartDateInput(@NonNull ListViewModel viewModel) {
+    private TextInputEditText configStartDateInput() {
         final TextInputEditText startDateInput = requireView().findViewById(R.id.start_date_filter_input);
         startDateInput.setOnClickListener(v -> viewModel.showDatePickerDialog(startDateInput.getId()));
         return startDateInput;
     }
 
-    private TextInputEditText configEndDateInput(@NonNull ListViewModel viewModel) {
+    private TextInputEditText configEndDateInput() {
         final TextInputEditText endDateInput = requireView().findViewById(R.id.end_date_filter_input);
         endDateInput.setOnClickListener(v -> viewModel.showDatePickerDialog(endDateInput.getId()));
         return endDateInput;
     }
 
-    private TextInputEditText configStartTimeInput(@NonNull ListViewModel viewModel) {
+    private TextInputEditText configStartTimeInput() {
         final TextInputEditText startTimeInput = requireView().findViewById(R.id.start_time_filter_input);
         startTimeInput.setOnClickListener(v -> viewModel.showTimePickerDialog(startTimeInput.getId()));
         return startTimeInput;
     }
 
-    private TextInputEditText configEndTimeInput(@NonNull ListViewModel viewModel) {
+    private TextInputEditText configEndTimeInput() {
         final TextInputEditText endTimeInput = requireView().findViewById(R.id.end_time_filter_input);
         endTimeInput.setOnClickListener(v -> viewModel.showTimePickerDialog(endTimeInput.getId()));
         return endTimeInput;
     }
 
-    private void configDateAndTimeLayouts(@NonNull ListViewModel viewModel) {
+    private void configDateAndTimeLayouts() {
         final TextInputLayout startDateLayout = requireView().findViewById(R.id.start_date_filter_layout);
         final TextInputLayout endDateLayout = requireView().findViewById(R.id.end_date_filter_layout);
         final TextInputLayout startTimeLayout = requireView().findViewById(R.id.start_time_filter_layout);
@@ -154,27 +174,22 @@ public class ListFragment extends Fragment {
 
     // ------------------------------- PLACE & MEMBER FILTER METHODS -------------------------------
 
-    private void configPlace(@NonNull ListViewModel viewModel) {
+    private void configPlace() {
         final RecyclerView placeList = requireView().findViewById(R.id.place_list);
         placeList.setLayoutManager(new GridLayoutManager(requireContext(), 4));
-        placeList.setAdapter(new PlaceFilterAdapter(
-            DummyGenerator.CHECKABLE_LOGOS,
-            viewModel::setPlaceFilter
-        ));
+        placeList.setAdapter(new PlaceFilterAdapter(DummyGenerator.CHECKABLE_LOGOS, viewModel::setPlaceFilter));
     }
 
-    private void configMember(@NonNull ListViewModel viewModel) {
-        ((RecyclerView) requireView().findViewById(R.id.member_list)).setAdapter(new MemberFilterAdapter(
-            DummyGenerator.getNames(),
-            viewModel::setMemberFilter
-        ));
+    private void configMember() {
+        ((RecyclerView) requireView().findViewById(R.id.member_list))
+            .setAdapter(new MemberFilterAdapter(getNames(DummyGenerator.EMAILS),viewModel::setEmailFilter));
     }
 
     // ---------------------------------------- FAB METHODS ----------------------------------------
 
-    private void configFab(@NonNull ListViewModel viewModel) {
+    private void configFab(@NonNull ActivityResultLauncher<Intent> launcher) {
         final View fab = requireView().findViewById(R.id.add_meeting);
-        fab.setOnClickListener(v -> startActivity(new Intent(requireActivity(), AddActivity.class)));
+        fab.setOnClickListener(v -> launcher.launch(new Intent(requireActivity(), AddActivity.class)));
         fab.setOnLongClickListener(v -> {
             viewModel.generateDummyMeetings();
             return true;
@@ -183,9 +198,8 @@ public class ListFragment extends Fragment {
 
     // ------------------------------------- UI EVENT METHODS --------------------------------------
 
-    private void showDatePicker(@NonNull ListViewModel viewModel) { // TODO: duplicate code
-        // Caution with month value range!
-        // LocalDate (java.time) returns a month between 1 and 12 whereas Calendar between 0 and 11
+    private void showDatePicker() {
+        // TIPS: Month value range is 1..12 with LocalDate and 0..11 with Calendar
         viewModel.getDatePickerEvent().observe(
             getViewLifecycleOwner(),
             localDate -> new DatePickerDialog(
@@ -198,7 +212,7 @@ public class ListFragment extends Fragment {
         );
     }
 
-    private void showTimePicker(@NonNull ListViewModel viewModel) {
+    private void showTimePicker() {
         viewModel.getTimePickerEvent().observe(
             getViewLifecycleOwner(),
             localTime -> new TimePickerDialog(
