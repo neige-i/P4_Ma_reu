@@ -60,19 +60,19 @@ public class NewMeetingUiModel {
     // ------------------------------- CONSTRUCTOR & GETTERS/SETTERS -------------------------------
 
     public NewMeetingUiModel(@NonNull Meeting meeting) {
-        this.topic = meeting.getTopic();
-        this.date = formatDateTime(meeting.getDate());
-        this.startTime = formatDateTime(meeting.getStartTime());
-        this.endTime = formatDateTime(meeting.getEndTime());
-        this.place = meeting.getPlace();
-        this.memberList = new ArrayList<>();
+        topic = meeting.getTopic();
+        date = formatDateTime(meeting.getDate());
+        startTime = formatDateTime(meeting.getStartTime());
+        endTime = formatDateTime(meeting.getEndTime());
+        place = meeting.getPlace();
+        memberList = new ArrayList<>();
         setMemberList(meeting.getMemberList());
-        this.topicError = meeting.getTopicError();
-        this.dateError = meeting.getDateError();
-        this.startTimeError = meeting.getStartTimeError();
-        this.endTimeError = meeting.getEndTimeError();
-        this.placeError = meeting.getPlaceError();
-        this.samePlaceTimes = meeting.getSamePlaceTimes();
+        topicError = meeting.getTopicError();
+        dateError = meeting.getDateError();
+        startTimeError = meeting.getStartTimeError();
+        endTimeError = meeting.getEndTimeError();
+        placeError = meeting.getPlaceError();
+        samePlaceTimes = meeting.getSamePlaceTimes();
     }
 
     @NonNull
@@ -102,19 +102,7 @@ public class NewMeetingUiModel {
 
     @NonNull
     public List<MemberUiModel> getMemberList() {
-        // TIPS: instantiate new objects to correctly update ListAdapter
-        final List<MemberUiModel> newMemberList = new ArrayList<>();
-        for (MemberUiModel memberUiModel : memberList) {
-            newMemberList.add(new MemberUiModel(
-                memberUiModel.getId(),
-                memberUiModel.getEmail(),
-                memberUiModel.getEmailErrorId(),
-                memberUiModel.getAddButtonVisibility(),
-                memberUiModel.getRemoveButtonVisibility(),
-                memberUiModel.getSameMemberTimes()
-            ));
-        }
-        return newMemberList;
+        return memberList;
     }
 
     public String getTopicError(@NonNull Application application) {
@@ -136,6 +124,7 @@ public class NewMeetingUiModel {
     public String getPlaceError(@NonNull Application application) {
         return getFieldError(placeError, application);
     }
+
     // --------------------------------------- LOCAL METHODS ---------------------------------------
 
     /**
@@ -162,9 +151,7 @@ public class NewMeetingUiModel {
             int removeButtonVisibility = memberList.size() == 1 ? View.INVISIBLE : View.VISIBLE;
             final Member member = memberList.get(i);
 
-            // TODO: commenting the following instruction makes the empty UI test pass
             this.memberList.add(new MemberUiModel(
-                member.getId(),
                 member.getEmail(),
                 member.getError(),
                 addButtonVisibility,

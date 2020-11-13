@@ -14,22 +14,19 @@ import static com.neige_i.mareu.Util.NO_ERROR;
 
 public class MemberUiModel {
 
-    // ---------- INSTANCE VARIABLE
+    // ------------------------------------ INSTANCE VARIABLES -------------------------------------
 
-    private final int id;
     @NonNull
     private final String email;
     private final int emailError;
     private final int addButtonVisibility;
     private final int removeButtonVisibility;
-
     private final LocalTime[] sameMemberTimes;
 
-    // ---------- CONSTRUCTOR
+    // ----------------------------------- CONSTRUCTOR & GETTERS -----------------------------------
 
-    public MemberUiModel(int id, @NonNull String email, int emailError, int addButtonVisibility,
+    public MemberUiModel(@NonNull String email, int emailError, int addButtonVisibility,
                          int removeButtonVisibility, LocalTime... sameMemberTimes) {
-        this.id = id;
         this.email = email;
         this.emailError = emailError;
         this.addButtonVisibility = addButtonVisibility;
@@ -37,19 +34,9 @@ public class MemberUiModel {
         this.sameMemberTimes = sameMemberTimes;
     }
 
-    // ---------- GETTER
-
-    public int getId() {
-        return id;
-    }
-
     @NonNull
     public String getEmail() {
         return email;
-    }
-
-    public int getEmailErrorId() {
-        return emailError;
     }
 
     @Nullable
@@ -65,9 +52,7 @@ public class MemberUiModel {
         return removeButtonVisibility;
     }
 
-    public LocalTime[] getSameMemberTimes() {
-        return sameMemberTimes;
-    }
+    // --------------------------------------- LOCAL METHODS ---------------------------------------
 
     @Nullable
     private String getFieldError(@StringRes int errorMessage, @NonNull Context context) {
@@ -79,15 +64,14 @@ public class MemberUiModel {
             return context.getString(errorMessage);
     }
 
-    // ---------- OVERRIDDEN OBJECT's METHODS
+    // -------------------------------------- OBJECT METHODS ---------------------------------------
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final MemberUiModel memberUiModel = (MemberUiModel) o;
-        return id == memberUiModel.id &&
-            emailError == memberUiModel.emailError &&
+        return emailError == memberUiModel.emailError &&
             addButtonVisibility == memberUiModel.addButtonVisibility &&
             removeButtonVisibility == memberUiModel.removeButtonVisibility &&
             email.equals(memberUiModel.email);
@@ -97,9 +81,10 @@ public class MemberUiModel {
     @Override
     public String toString() {
         return "MemberUi{" +
-            id +
-            ", '" + email + '\'' +
-            ", " + emailError +
+            "email='" + email +
+            "', err=" + emailError +
+            ", add=" + addButtonVisibility +
+            ", remove" + removeButtonVisibility +
             '}';
     }
 }

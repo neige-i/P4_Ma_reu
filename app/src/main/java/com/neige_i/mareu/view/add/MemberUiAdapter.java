@@ -8,8 +8,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputLayout;
@@ -17,20 +15,30 @@ import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DI;
 import com.neige_i.mareu.view.add.ui_model.MemberUiModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.neige_i.mareu.Util.setTextWithoutFilter;
 
-public class MemberUiAdapter extends ListAdapter<MemberUiModel, MemberUiAdapter.MemberUiViewHolder> {
+public class MemberUiAdapter extends RecyclerView.Adapter<MemberUiAdapter.MemberUiViewHolder> {
 
     // ------------------------------------  CALLBACK VARIABLES ------------------------------------
 
     @NonNull
     private final OnMemberChangedListener onMemberChangedListener;
 
-    // ---------------------------------------- CONSTRUCTOR ----------------------------------------
+    @NonNull
+    private List<MemberUiModel> memberUiModels = new ArrayList<>();
 
-    protected MemberUiAdapter(@NonNull OnMemberChangedListener onMemberChangedListener) {
-        super(new MemberDiffCallback());
+    // ----------------------------------- CONSTRUCTOR & SETTER ------------------------------------
+
+    public MemberUiAdapter(@NonNull MemberUiAdapter.OnMemberChangedListener onMemberChangedListener) {
         this.onMemberChangedListener = onMemberChangedListener;
+    }
+
+    public void setNewList(@NonNull List<MemberUiModel> memberUiModels) {
+        this.memberUiModels = memberUiModels;
+        notifyDataSetChanged();
     }
 
     // -------------------------------------- ADAPTER METHODS --------------------------------------
@@ -47,11 +55,16 @@ public class MemberUiAdapter extends ListAdapter<MemberUiModel, MemberUiAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull MemberUiViewHolder holder, int position) {
-        final MemberUiModel uiModel = getItem(position);
+        final MemberUiModel uiModel = memberUiModels.get(position);
         setTextWithoutFilter(holder.email, uiModel.getEmail());
         holder.emailLayout.setError(uiModel.getEmailError(holder.itemView.getContext()));
         holder.addButton.setVisibility(uiModel.getAddButtonVisibility());
         holder.removeButton.setVisibility(uiModel.getRemoveButtonVisibility());
+    }
+
+    @Override
+    public int getItemCount() {
+        return memberUiModels.size();
     }
 
     // ------------------------------------- VIEW HOLDER CLASS -------------------------------------
@@ -86,21 +99,6 @@ public class MemberUiAdapter extends ListAdapter<MemberUiModel, MemberUiAdapter.
             addButton.setOnClickListener(v -> onMemberChangedListener.onAddMember(getAdapterPosition()));
             removeButton = itemView.findViewById(R.id.remove_member);
             removeButton.setOnClickListener(v -> onMemberChangedListener.onRemoveMember(getAdapterPosition()));
-        }
-    }
-
-    // -------------------------------------- DIFF UTIL CLASS --------------------------------------
-
-    private static class MemberDiffCallback extends DiffUtil.ItemCallback<MemberUiModel> {
-
-        @Override
-        public boolean areItemsTheSame(@NonNull MemberUiModel oldItem, @NonNull MemberUiModel newItem) {
-            return oldItem.getId() == newItem.getId();
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull MemberUiModel oldItem, @NonNull MemberUiModel newItem) {
-            return oldItem.equals(newItem);
         }
     }
 

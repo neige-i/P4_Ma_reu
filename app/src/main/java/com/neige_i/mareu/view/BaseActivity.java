@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment;
 import com.neige_i.mareu.R;
 import com.neige_i.mareu.data.DI;
 
-// TIPS: Abstract Activity to describe a general behaviour that will be shared to child classes
 public abstract class BaseActivity extends AppCompatActivity {
 
     // ------------------------------------- ACTIVITY METHODS --------------------------------------

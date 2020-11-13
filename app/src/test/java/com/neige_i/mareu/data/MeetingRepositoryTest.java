@@ -47,6 +47,7 @@ public class MeetingRepositoryTest {
 
     @Before
     public void setUp() {
+        DI.setMemberId(99);
         meetingRepository.initRepository();
     }
 
@@ -54,12 +55,14 @@ public class MeetingRepositoryTest {
 
     @Test
     public void initRepository_checkMeetingAndAvailableMembers() {
-        // Given: nothing
+        // Given: an expected Meeting with an 'empty' member
+        final Meeting expectedMeeting = new Meeting();
+        expectedMeeting.setMemberList(Collections.singletonList(new Member(99, "", NO_ERROR)));
 
         // When: initialize repository (done in setUp method)
 
         // Then: repository variables equal the expected ones
-        assertThat(meetingRepository.getMeeting().getValue(), is(new Meeting()));
+        assertThat(meetingRepository.getMeeting().getValue(), is(expectedMeeting));
         assertThat(meetingRepository.getAvailableMembers(), is(DummyGenerator.EMAILS));
     }
 
@@ -410,9 +413,7 @@ public class MeetingRepositoryTest {
 
     @Test
     public void triggerRequiredErrors_updateErrors() {
-        // Given: add a member to the repository and set an expected meeting with a 'required' error for all fields
-        DI.setMemberId(99);
-        meetingRepository.addMember(0);
+        // Given: an expected meeting with a 'required' error for all fields
         final Meeting expectedMeeting = new Meeting();
         expectedMeeting.setTopicError(R.string.required_field_error);
         expectedMeeting.setDateError(R.string.required_field_error);

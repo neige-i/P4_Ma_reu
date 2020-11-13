@@ -7,8 +7,8 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.neige_i.mareu.R;
-import com.neige_i.mareu.data.repository.MeetingRepository;
 import com.neige_i.mareu.data.model.Meeting;
+import com.neige_i.mareu.data.repository.MeetingRepository;
 import com.neige_i.mareu.view.SingleLiveEvent;
 import com.neige_i.mareu.view.add.ui_model.NewMeetingUiModel;
 
@@ -62,9 +62,7 @@ public class AddViewModel extends ViewModel {
         this.meetingRepository = meetingRepository;
         this.clock = clock;
 
-        // Initialize repository and add an empty member
         meetingRepository.initRepository();
-        meetingRepository.addMember(0);
     }
 
     @NonNull

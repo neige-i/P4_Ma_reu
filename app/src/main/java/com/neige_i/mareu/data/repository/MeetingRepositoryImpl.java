@@ -39,6 +39,7 @@ public class MeetingRepositoryImpl implements MeetingRepository {
     @Override
     public void initRepository() {
         meeting.setValue(new Meeting());
+        addMember(0);
         initAvailableMembers();
     }
 

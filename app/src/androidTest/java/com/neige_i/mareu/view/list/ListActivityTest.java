@@ -1,31 +1,29 @@
 package com.neige_i.mareu.view.list;
 
+import android.view.View;
 import android.widget.DatePicker;
-import android.widget.TimePicker;
 
+import androidx.annotation.IdRes;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.ViewAssertion;
 import androidx.test.espresso.contrib.PickerActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.neige_i.mareu.R;
-import com.neige_i.mareu.view.add.AddActivity;
 
-import org.junit.Before;
+import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.longClick;
-import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
-import static androidx.test.espresso.intent.Intents.init;
-import static androidx.test.espresso.intent.Intents.intended;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
-import static androidx.test.espresso.matcher.RootMatchers.isPlatformPopup;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -33,22 +31,21 @@ import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static com.neige_i.mareu.util.ClickViewAction.clickOnView;
-import static com.neige_i.mareu.util.RecyclerViewItemCountAssertion.withItemCount;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 @RunWith(AndroidJUnit4.class)
 public class ListActivityTest {
 
+    // ---------------------------------- ACTIVITY RULE VARIABLE -----------------------------------
+
     @Rule
     public ActivityScenarioRule<ListActivity> activityRule = new ActivityScenarioRule<>(ListActivity.class);
 
-    @Before
-    public void setUp() {
-        init();
-    }
+    // ----------------------------------------- INIT TEST -----------------------------------------
 
     @Test
     public void onActivityStarted_checkInitialState() {
@@ -59,6 +56,8 @@ public class ListActivityTest {
         // Then: the meeting list is empty
         onView(withId(R.id.list_meeting)).check(withItemCount(0));
     }
+
+    // ------------------------------------ DRAWER LAYOUT TEST -------------------------------------
 
     @Test
     public void onMenuItemClicked_showOrHideLayout() {
@@ -76,19 +75,8 @@ public class ListActivityTest {
         // Then: the filter layout is hidden
         onView(withId(R.id.filter_drawer)).check(matches(not(isDisplayed())));
     }
-/*
 
-    @Test
-    public void onAddButtonClicked_startActivity() {
-        // Given: initial state
-
-        // When: click on the 'add' button
-        onView(withId(R.id.add_meeting)).perform(click());
-
-        // Then: AddActivity is started
-        intended(hasComponent(AddActivity.class.getName()));
-    }
-*/
+    // ------------------------------------- MEETING LIST TEST -------------------------------------
 
     @Test
     public void onAddButtonLongClicked_showItems() {
@@ -115,6 +103,8 @@ public class ListActivityTest {
             .check(matches(not(hasDescendant(withText("Meeting A")))));
     }
 
+    // ---------------------------------------- FILTER TEST ----------------------------------------
+
     @Test
     public void onSelectStartDateFilter_showOnlyMeetingAfter() {
         // Given: add 6 dummy meetings and open filter layout
@@ -135,28 +125,6 @@ public class ListActivityTest {
             .check(matches(not(hasDescendant(withText("Meeting D")))))
             .check(matches(hasDescendant(withText("Meeting E"))))
             .check(matches(hasDescendant(withText("Meeting F"))));
-    }
-
-    @Test
-    public void onSelectEndDateFilter_showOnlyMeetingBefore() {
-        // Given: add 6 dummy meetings and open filter layout
-        onView(withId(R.id.add_meeting)).perform(longClick());
-        onView(withId(R.id.filter)).perform(click());
-
-        // When: click on the end date filter, select a date and validate
-        onView(withId(R.id.end_date_filter_input)).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 11, 7));
-        onView(withId(android.R.id.button1)).perform(click());
-
-        // Then: the list does not contain 'Meeting E' & 'Meeting F' which dates are after 07/11/2020
-        onView(withId(R.id.list_meeting))
-            .check(withItemCount(4))
-            .check(matches(hasDescendant(withText("Meeting A"))))
-            .check(matches(hasDescendant(withText("Meeting B"))))
-            .check(matches(hasDescendant(withText("Meeting C"))))
-            .check(matches(hasDescendant(withText("Meeting D"))))
-            .check(matches(not(hasDescendant(withText("Meeting E")))))
-            .check(matches(not(hasDescendant(withText("Meeting F")))));
     }
 
     @Test
@@ -208,36 +176,34 @@ public class ListActivityTest {
             .check(withItemCount(1))
             .check(matches(hasDescendant(withText("Meeting C"))));
     }
-/*
 
-    @Test
-    public void onAddCorrectMember_endActivityAndUpdateList() {
-        // Given: initial state
+    // ---------------------------------- CUSTOM ESPRESSO METHODS ----------------------------------
 
-        // When: open AddActivity, fill all the fields and click on the 'add' button
-        onView(withId(R.id.add_meeting)).perform(click());
-        onView(withId(R.id.topic_input)).perform(typeText("new topic"), closeSoftKeyboard());
-        onView(withId(R.id.date_input)).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 11, 7));
-        onView(withId(android.R.id.button1)).perform(click());
-        onView(withId(R.id.start_time_input)).perform(click());
-        onView(withClassName(equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(13, 0));
-        onView(withId(android.R.id.button1)).perform(click());
-        onView(withId(R.id.end_time_input)).perform(click());
-        onView(withClassName(equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(14, 30));
-        onView(withId(android.R.id.button1)).perform(click());
-        onView(withId(R.id.place_input)).perform(click());
-        onView(withText("Mario")).inRoot(isPlatformPopup()).perform(click());
-        onView(withId(R.id.email_input)).perform(click());
-        onView(withText("maxime@lamzone.com")).inRoot(isPlatformPopup()).perform(click());
-        onView(withId(R.id.add_button)).perform(click());
+    private ViewAction clickOnView(@IdRes int viewId) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return null;
+            }
 
-        // Then: the meeting is added to the list
-        onView(withId(R.id.list_meeting))
-            .check(withItemCount(1))
-            .check(matches(hasDescendant(withText("new topic"))))
-            .check(matches(hasDescendant(withText("11/07/2020 - 13:00 - 14:30"))))
-            .check(matches(hasDescendant(withText("maxime"))));
+            @Override
+            public String getDescription() {
+                return null;
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                view.findViewById(viewId).performClick();
+            }
+        };
     }
-*/
+
+    private ViewAssertion withItemCount(int count) {
+        return (view, noViewFoundException) -> {
+            if (noViewFoundException != null)
+                throw noViewFoundException;
+
+            assertThat(((RecyclerView) view).getAdapter().getItemCount(), is(count));
+        };
+    }
 }
